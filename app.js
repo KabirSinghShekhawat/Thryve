@@ -1206,7 +1206,7 @@ app.post('/otp', isLoggedIn, function(req, res) {
 			service: 'Gmail', 
 			auth: {
 			  user: 'contact.thryve.health@gmail.com',
-			  pass: "thryve123"
+			  pass: "********"
 			}
 	  	});
 		var mailOptions = {
