@@ -1294,7 +1294,7 @@ app.post('/passwordreset', function(req, res, next) {
 		  		service: 'Gmail', 
 		  		auth: {
 					user: 'contact.thryve.health@gmail.com',
-					pass: "thryve123"
+					pass: "********"
 		  		}
 			});
 			var mailOptions = {
@@ -1363,7 +1363,7 @@ app.post('/reset/:token', function(req, res) {
 		  		service: 'Gmail', 
 		  		auth: {
 					user: 'contact.thryve.health@gmail.com',
-					pass: "thryve123"
+					pass: "********"
 		  		}
 			});
 			var mailOptions = {
