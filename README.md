@@ -1,5 +1,5 @@
 # Thryve
-This is health website divided into three sections:
+This is a health & fitness website divided into three sections:
 1. Diet:
 This section lets you build your custom diet.
 
