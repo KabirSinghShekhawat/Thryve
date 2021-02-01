@@ -1,1 +1,5 @@
 /node_modules
+.idea/workspace.xml
+.idea/Thryve.iml
+.idea/modules.xml
+.idea/vcs.xml
