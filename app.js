@@ -18,7 +18,7 @@ var express           	  = require("express"),
 	async    			  = require("async"),
 	nodemailer            = require("nodemailer"),
 	crypto                = require("crypto")
-
+const homeRoute = require('./routes/home')
 //======================================================================================================================================================//
 //																	ENVIRONMENT SETUP
 //======================================================================================================================================================//
@@ -41,6 +41,7 @@ app.use(passport.session());
 passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
+
 app.use(function(req, res, next){
 	res.locals.currentUser = req.user;
 	res.locals.error = req.flash("error");
@@ -131,26 +132,13 @@ function isAdmin(req, res, next){
 //	ROOT ROUTE
 //------------------------------------------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------------------------------------------------------------//
-app.get("/", function(req, res){
-	console.log("GET: /");
-	res.render("landing");
-});
+app.use('/', homeRoute);
+
 
 //	HOME ROUTE
 //------------------------------------------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------------------------------------------------------------//
-app.get("/home", isLoggedIn, isVerified, function(req, res){
-	console.log("GET: /home");
-	var userId = req.user._id;
-	User.findById(userId).populate({path: "diet.food"}).populate({path: "workout.exercise"}).exec(function(err, user){
-		if(err){
-			console.log(err);
-		}
-		else{
-			res.render("home", {user:user});	
-		}
-	});
-});
+
 
 app.put("/home/foods", isLoggedIn, isVerified, function(req, res){
 	var userId = req.user._id;
@@ -1432,9 +1420,4 @@ function AnyExp(text) {
     return text.replace(text, ".*");
 };
 
-//======================================================================================================================================================//
-//																		  SERVER
-//======================================================================================================================================================//
-app.listen(process.env.PORT || 3000, function(){
-	console.log("server initialised.");
-});
+module.exports = app;
