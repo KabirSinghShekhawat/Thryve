@@ -138,50 +138,6 @@ app.use('/', homeRoute);
 //	HOME ROUTE
 //------------------------------------------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------------------------------------------------------------//
-
-
-app.put("/home/foods", isLoggedIn, isVerified, function(req, res){
-	var userId = req.user._id;
-	console.log("PUT: /home/foods");
-	User.findById(userId).populate({path: "diet.food"}).exec(function(err, user){
-		for(var i=0; i<user.diet.length; i++){
-			var flag = 0;
-			for(var key in req.body.tick){
-				if(user.diet[i].food._id == req.body.tick[key]){
-					user.diet[i].check = true;
-					flag = 1;
-				}
-			}
-			if(!flag){
-				user.diet[i].check = false;
-			}
-		}
-		user.save();
-		res.redirect("/home");
-	});
-});
-
-app.put("/home/exercises", isLoggedIn, isVerified, function(req, res){
-	var userId = req.user._id;
-	console.log("PUT: /home/exercises")
-	User.findById(userId).populate({path: "workout.exercise"}).exec(function(err, user){
-		for(var i=0; i<user.workout.length; i++){
-			var flag = 0;
-			for(var key in req.body.tick){
-				if(user.workout[i].exercise._id == req.body.tick[key]){
-					user.workout[i].check = true;
-					flag = 1;
-				}
-			}
-			if(!flag){
-				user.workout[i].check = false;
-			}
-		}
-		user.save();
-		res.redirect("/home");
-	});
-});
-
 //	PROFILE ROUTES
 //------------------------------------------------------------------------------------------------------------------------------------------------------//
 //------------------------------------------------------------------------------------------------------------------------------------------------------//
