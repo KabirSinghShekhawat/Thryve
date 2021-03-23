@@ -1,7 +1,7 @@
 const Profile = require("./../models/profile")
 const User = require("./../models/user")
 const Exercise = require("./../models/exercise")
-const Foods = require("./../models/food")
+const Food = require("./../models/food")
 
 exports.getProfile = async (request, response) => {
     const { profile: id } = request.user;
@@ -78,33 +78,30 @@ exports.deleteProfile = async (request, response) => {
 
     try {
         const user = await User.findById(userId)
-        console.log(user)
-        user.diet.find("food")
-        .then(foodItems => {
-            console.log('Food items \n' + foodItems)
-        })
-        // const foodItems = user.diet
-        if(foodItems.length > 0) {
-            for (let food of foodItems) {
-                await Food.findById(food.food, (err, food) => {
-                    food.activeUsers = food.activeUsers - 1
-                    food.save()
-                    if(err) console.log(err + ' in food items mein')
+        const diet = user.diet
+        if(diet.length > 0) {
+            for (let foodItem of diet) {
+                await Food.findById(foodItem.food, (err, food) => {
+                    if(!err) {
+                        food.activeUsers = food.activeUsers - 1
+                        food.save()
+                    } else throw new Error(err)
                 })
             }
         }
 
-        const workouts = await user.workout.find({})
-        console.log(workouts)
+        const workouts = user.workout
         for (let workout of workouts) {
-            await Exercise.findById(workout.workout, (err, exercise) => {
+            await Exercise.findById(workout.exercise, (err, exercise) => {
                 if (!err) {
                     exercise.activeUsers = exercise.activeUsers - 1
                     exercise.save()
-                } else console.log('error in workout')
+                } else throw new Error(err)
             })
         }
+
         await Profile.findByIdAndRemove(profileId)
+        
         await User.findByIdAndRemove(userId, (err) => {
             if (!err)
                 response.redirect('/')
