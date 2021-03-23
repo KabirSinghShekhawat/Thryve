@@ -1205,15 +1205,15 @@ app.post('/otp', isLoggedIn, function(req, res) {
 		var smtpTransport = nodemailer.createTransport({
 			service: 'Gmail', 
 			auth: {
-			  user: 'contact.thryve.health@gmail.com',
-			  pass: "********"
+			  user: 'progamerdead100@gmail.com',
+			  pass: "ljawgraopfjepuqz"
 			}
 	  	});
 		var mailOptions = {
 				to: req.user.email,
-				from: 'contact.thryve.health@gmail.com',
+				from: 'progamerdead100@gmail.com',
 				subject: 'Verification',
-				text: 'Thank you for registering. Please complete the verification process.\n\n' +
+				text: 'Thank you for registering.\nPlease complete the verification process.\n\n' +
 				'OTP: ' + otp
 		};
 		smtpTransport.sendMail(mailOptions, function(err) {
