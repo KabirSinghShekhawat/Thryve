@@ -21,6 +21,7 @@ var express           	  = require("express"),
 	crypto                = require("crypto")
 const homeRoute = require('./routes/home')
 const profileRoute = require('./routes/profile')
+const historyRoute = require('./routes/history')
 //======================================================================================================================================================//
 //																	ENVIRONMENT SETUP
 //======================================================================================================================================================//
@@ -141,174 +142,65 @@ app.use('/', homeRoute)
 //	PROFILE ROUTES
 app.use('/profile', profileRoute)
 
-//EDIT
-// app.get("/profile/edit",isLoggedIn, isVerified, function(req, res){
-// 	console.log("GET: /profile/edit");
-// 	var profileId = req.user.profile;
-// 	Profile.findById(profileId, function(err, foundProfile){
-// 		if(err){
-// 			console.log(err);
-// 		}
-// 		else{
-// 			res.render("profile/edit", {profile: foundProfile});	
-// 		}
-// 	});
-// });
-
-//UPDATE
-// app.put("/profile", isLoggedIn, isVerified, function(req, res){
-// 	console.log("PUT: /profile");
-// 	var profileId = req.user.profile;
-// 	Profile.findByIdAndUpdate(profileId, req.body.profile, function(err, updatedProfile){
-// 		if(err){
-// 			console.log(err);
-// 			req.flash("error", "Something went wrong");
-// 			res.redirect("/home")
-// 		}
-// 		else{
-// 			res.redirect("/profile");
-// 		}
-// 	});
-// });
-
-//DELETE
-// app.delete("/profile", isLoggedIn, isVerified, function(req, res){
-// 	var userId = req.user._id;
-// 	var profileId = req.user.profile;
-// 	Profile.findByIdAndRemove(profileId, function(err){
-// 		User.findById(userId, function(err, user){
-// 			user.diet.find(function(d, index){
-// 				Food.findById(d.food, function(err, food){
-// 					food.activeUsers = food.activeUsers - 1;
-// 					food.save();
-// 				});
-// 			});
-// 			user.workout.find(function(w, index){
-// 				Exercise.findById(w.exercise, function(err, exercise){
-// 					exercise.activeUsers = exercise.activeUsers -1;
-// 					exercise.save();
-// 				});
-// 			});
-// 			User.findByIdAndRemove(userId, function(err){
-// 				res.redirect("/");
-// 			});
-// 		});
-// 	});
-// });
-
 //	HISTORY SUBDIVISION
 //------------------------------------------------------------------------//
 //------------------------------------------------------------------------//
-
-//ADD WEIGHT
-app.post("/history/weight", isLoggedIn, isVerified, function(req, res){
-	console.log("POST: /history/weight");
-	var profileId = req.user.profile;
-	Profile.findByIdAndUpdate(profileId, {'$set': {'weight': req.body.data}}, function(err, foundProfile){
-		if(err){
-			console.log(err);
-		}
-		else{
-			var object = {
-				weight: req.body.data,
-				timestamp: new Date(Date.now())
-			}
-			foundProfile.weightHist.push(object);
-			foundProfile.save();
-			res.redirect("/healthinfo");
-		}
-	});
-});
-
-//REMOVE WEIGHT
-app.delete("/history/weight", function(req, res){
-	console.log("DELETE: /history/weight");
-	var profileId = req.user.profile;
-	Profile.findById(profileId, function(err, profile){
-		if(err){
-			console.log(err);
-		}
-		else{
-			var ts = new Date(req.body.timestamp).toISOString();
-			var idx  = -1;
-			profile.weightHist.find(function(w, index){
-				var timestamp = new Date(new Date(w.timestamp).setMilliseconds(000)).toISOString();
-				if( timestamp == ts){
-					idx = index;
-				}
-			});
-			if(profile.weightHist.length > 1 && idx != -1){
-				profile.weightHist.splice(idx, 1);
-				profile.weight = profile.weightHist[profile.weightHist.length - 1].weight;
-				profile.save();
-				res.redirect("/healthinfo");
-			}
-			else if(profile.weightHist.length == 1){
-				req.flash("error", "Weight History cannot be empty. Please add a data to delete.");
-				res.redirect("/healthinfo/weight");
-			}
-			else{
-				req.flash("error", "Something went wrong");
-				res.redirect("/healthinfo");
-			}
-		}
-	});
-});
+app.use('/history', historyRoute)
 
 //ADD BP
-app.post("/history/bp", isLoggedIn, isVerified, function(req, res){
-	console.log("POST: /history/bp");
-	var profileId = req.user.profile;
-	Profile.findByIdAndUpdate(profileId, {'$set': {'bp': req.body.bp}}, function(err, foundProfile){
-		if(err){
-			console.log(err);
-		}
-		else{
-			var object = {
-				bp: req.body.bp,
-				timestamp: new Date(Date.now())
-			}
-			foundProfile.bpHist.push(object);
-			foundProfile.save();
-			res.redirect("/healthinfo");
-		}
-	});
-});
+// app.post("/history/bp", isLoggedIn, isVerified, function(req, res){
+// 	console.log("POST: /history/bp");
+// 	var profileId = req.user.profile;
+// 	Profile.findByIdAndUpdate(profileId, {'$set': {'bp': req.body.bp}}, function(err, foundProfile){
+// 		if(err){
+// 			console.log(err);
+// 		}
+// 		else{
+// 			var object = {
+// 				bp: req.body.bp,
+// 				timestamp: new Date(Date.now())
+// 			}
+// 			foundProfile.bpHist.push(object);
+// 			foundProfile.save();
+// 			res.redirect("/healthinfo");
+// 		}
+// 	});
+// });
 
 //REMOVE BP
-app.delete("/history/bp", function(req, res){
-	console.log("DELETE: /history/bp");
-	var profileId = req.user.profile;
-	Profile.findById(profileId, function(err, profile){
-		if(err){
-			console.log(err);
-		}
-		else{
-			var ts = new Date(req.body.timestamp).toISOString();
-			var idx  = -1;
-			profile.bpHist.find(function(b, index){
-				var timestamp = new Date(new Date(b.timestamp).setMilliseconds(000)).toISOString();
-				if( timestamp == ts){
-					idx = index;
-				}
-			});
-			if(profile.bpHist.length > 1 && idx != -1){
-				profile.bpHist.splice(idx, 1);
-				profile.bp = profile.bpHist[profile.bpHist.length - 1].bp;
-				profile.save();
-				res.redirect("/healthinfo");
-			}
-			else if(profile.bpHist.length == 1){
-				req.flash("error", "Blood Pressure History cannot be empty. Please add a data to delete.");
-				res.redirect("/healthinfo/bp");
-			}
-			else{
-				req.flash("error", "Something went wrong");
-				res.redirect("/healthinfo");
-			}
-		}
-	});
-});
+// app.delete("/history/bp", function(req, res){
+// 	console.log("DELETE: /history/bp");
+// 	var profileId = req.user.profile;
+// 	Profile.findById(profileId, function(err, profile){
+// 		if(err){
+// 			console.log(err);
+// 		}
+// 		else{
+// 			var ts = new Date(req.body.timestamp).toISOString();
+// 			var idx  = -1;
+// 			profile.bpHist.find(function(b, index){
+// 				var timestamp = new Date(new Date(b.timestamp).setMilliseconds(000)).toISOString();
+// 				if( timestamp == ts){
+// 					idx = index;
+// 				}
+// 			});
+// 			if(profile.bpHist.length > 1 && idx != -1){
+// 				profile.bpHist.splice(idx, 1);
+// 				profile.bp = profile.bpHist[profile.bpHist.length - 1].bp;
+// 				profile.save();
+// 				res.redirect("/healthinfo");
+// 			}
+// 			else if(profile.bpHist.length == 1){
+// 				req.flash("error", "Blood Pressure History cannot be empty. Please add a data to delete.");
+// 				res.redirect("/healthinfo/bp");
+// 			}
+// 			else{
+// 				req.flash("error", "Something went wrong");
+// 				res.redirect("/healthinfo");
+// 			}
+// 		}
+// 	});
+// });
 
 //ADD SUGAR
 app.post("/history/sugar", isLoggedIn, isVerified, function(req, res){
