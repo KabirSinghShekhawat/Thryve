@@ -3,7 +3,8 @@
 //======================================================================================================================================================//
 var express           	  = require("express"),
 	app                   = express(),
-	bodyParser            = require("body-parser"),
+	// bodyParser            = require("body-parser"),
+	morgan = require("morgan"),
 	expressSantizer       = require("express-sanitizer"), 
 	mongoose 	          = require("mongoose"),
 	flash				  = require("connect-flash"), 
@@ -19,13 +20,23 @@ var express           	  = require("express"),
 	nodemailer            = require("nodemailer"),
 	crypto                = require("crypto")
 const homeRoute = require('./routes/home')
+const profileRoute = require('./routes/profile')
 //======================================================================================================================================================//
 //																	ENVIRONMENT SETUP
 //======================================================================================================================================================//
 
-mongoose.connect("mongodb://localhost/thryve3", {useNewUrlParser: true, useUnifiedTopology: true});
+const mongoOptions = {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+    useFindAndModify: false
+}
+
+mongoose.connect("mongodb://localhost/thryve3", mongoOptions);
 app.set("view engine","ejs");
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(express.urlencoded({extended: true}));
+app.use(express.json());
+app.use(morgan('dev'))
 app.use(expressSantizer());
 app.use(express.static(__dirname + "/public"));
 app.use(methodOverride("_method"));
@@ -49,7 +60,7 @@ app.use(function(req, res, next){
 	next();
 });
 
-
+require('dotenv').config()
 //======================================================================================================================================================//
 //																	  MIDDLEWARE
 //======================================================================================================================================================//
@@ -125,127 +136,65 @@ function isAdmin(req, res, next){
 	res.redirect("back");
 }
 
-//======================================================================================================================================================//
-//																		ROUTES
-//======================================================================================================================================================//
-
-//	ROOT ROUTE
-//------------------------------------------------------------------------------------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------------------------------------------------------//
-app.use('/', homeRoute);
-
-
 //	HOME ROUTE
-//------------------------------------------------------------------------------------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------------------------------------------------------//
+app.use('/', homeRoute)
 //	PROFILE ROUTES
-//------------------------------------------------------------------------------------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------------------------------------------------------//
-
-//SHOW
-app.get("/profile", isLoggedIn, isVerified, function(req, res){
-	console.log("GET: /profile");
-	var profileId = req.user.profile;
-	Profile.findById(profileId, function(err, foundProfile){
-		if(err){
-			console.log(err);
-		}
-		else{
-			res.render("profile/show", {profile: foundProfile});
-		}
-	});
-});
-
-//NEW
-app.get("/profile/new", isLoggedIn, isVerified, function(req, res){
-	console.log("GET: /profile/new");
-	res.render("profile/new");
-});
-
-//CREATE
-app.post("/profile", isLoggedIn, isVerified, function(req, res){
-	console.log("POST: /profile");
-	var userId = req.user._id;
-	Profile.create(req.body.profile, function(err, profile){
-		if(err){
-			console.log(err);
-		}
-		else{
-			var object = {
-				weight: req.body.profile.weight,
-				timestamp: new Date(Date.now())
-			};
-			profile.weightHist.push(object);
-			profile.targetWeight = Number(((req.body.profile.height.magnitude/100)*(req.body.profile.height.magnitude/100)*24).toFixed(2));
-			profile.save();
-			User.findById(userId, function(err, foundUser){
-				if(err){
-					console.log(err);
-				}
-				else{
-					foundUser.profile = profile;
-					foundUser.save();
-					res.redirect("/home");
-				}
-			});
-		}
-	});
-});
+app.use('/profile', profileRoute)
 
 //EDIT
-app.get("/profile/edit",isLoggedIn, isVerified, function(req, res){
-	console.log("GET: /profile/edit");
-	var profileId = req.user.profile;
-	Profile.findById(profileId, function(err, foundProfile){
-		if(err){
-			console.log(err);
-		}
-		else{
-			res.render("profile/edit", {profile: foundProfile});	
-		}
-	});
-});
+// app.get("/profile/edit",isLoggedIn, isVerified, function(req, res){
+// 	console.log("GET: /profile/edit");
+// 	var profileId = req.user.profile;
+// 	Profile.findById(profileId, function(err, foundProfile){
+// 		if(err){
+// 			console.log(err);
+// 		}
+// 		else{
+// 			res.render("profile/edit", {profile: foundProfile});	
+// 		}
+// 	});
+// });
 
 //UPDATE
-app.put("/profile", isLoggedIn, isVerified, function(req, res){
-	console.log("PUT: /profile");
-	var profileId = req.user.profile;
-	Profile.findByIdAndUpdate(profileId, req.body.profile, function(err, updatedProfile){
-		if(err){
-			console.log(err);
-			req.flash("error", "Something went wrong");
-			res.redirect("/home")
-		}
-		else{
-			res.redirect("/profile");
-		}
-	});
-});
+// app.put("/profile", isLoggedIn, isVerified, function(req, res){
+// 	console.log("PUT: /profile");
+// 	var profileId = req.user.profile;
+// 	Profile.findByIdAndUpdate(profileId, req.body.profile, function(err, updatedProfile){
+// 		if(err){
+// 			console.log(err);
+// 			req.flash("error", "Something went wrong");
+// 			res.redirect("/home")
+// 		}
+// 		else{
+// 			res.redirect("/profile");
+// 		}
+// 	});
+// });
 
 //DELETE
-app.delete("/profile", isLoggedIn, isVerified, function(req, res){
-	var userId = req.user._id;
-	var profileId = req.user.profile;
-	Profile.findByIdAndRemove(profileId, function(err){
-		User.findById(userId, function(err, user){
-			user.diet.find(function(d, index){
-				Food.findById(d.food, function(err, food){
-					food.activeUsers = food.activeUsers - 1;
-					food.save();
-				});
-			});
-			user.workout.find(function(w, index){
-				Exercise.findById(w.exercise, function(err, exercise){
-					exercise.activeUsers = exercise.activeUsers -1;
-					exercise.save();
-				});
-			});
-			User.findByIdAndRemove(userId, function(err){
-				res.redirect("/");
-			});
-		});
-	});
-});
+// app.delete("/profile", isLoggedIn, isVerified, function(req, res){
+// 	var userId = req.user._id;
+// 	var profileId = req.user.profile;
+// 	Profile.findByIdAndRemove(profileId, function(err){
+// 		User.findById(userId, function(err, user){
+// 			user.diet.find(function(d, index){
+// 				Food.findById(d.food, function(err, food){
+// 					food.activeUsers = food.activeUsers - 1;
+// 					food.save();
+// 				});
+// 			});
+// 			user.workout.find(function(w, index){
+// 				Exercise.findById(w.exercise, function(err, exercise){
+// 					exercise.activeUsers = exercise.activeUsers -1;
+// 					exercise.save();
+// 				});
+// 			});
+// 			User.findByIdAndRemove(userId, function(err){
+// 				res.redirect("/");
+// 			});
+// 		});
+// 	});
+// });
 
 //	HISTORY SUBDIVISION
 //------------------------------------------------------------------------//
@@ -1149,13 +1098,15 @@ app.post('/otp', isLoggedIn, function(req, res) {
 		var smtpTransport = nodemailer.createTransport({
 			service: 'Gmail', 
 			auth: {
-			  user: 'progamerdead100@gmail.com',
-			  pass: "ljawgraopfjepuqz"
+			  user: process.env.NODEMAILER_USER,
+			//   user: 'progamerdead100@gmail.com',
+			  pass: process.env.NODEMAILER_PASS
+			//   pass: "ljawgraopfjepuqz"
 			}
 	  	});
 		var mailOptions = {
 				to: req.user.email,
-				from: 'progamerdead100@gmail.com',
+				from: process.env.NODEMAILER_USER,
 				subject: 'Verification',
 				text: 'Thank you for registering.\nPlease complete the verification process.\n\n' +
 				'OTP: ' + otp
