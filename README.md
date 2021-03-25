@@ -12,3 +12,19 @@ This section shows the health info and helps your track your diet, weight, blood
 # Landing
 ![Landing Page](../master/Showcase/landing.png)
 
+# Diets
+![Diets Page](../master/Showcase/diets_1.png)
+![Diets Page](../master/Showcase/diets_2.png)
+
+# Workouts
+
+![Workouts](../master/Showcase/workouts_1.png)
+
+# Weight History
+![Graphs](../master/Showcase/weight_history.png)
+
+# Sugar History
+![Graphs](../master/Showcase/sugar_history.png)
+
+# BP History
+![Graphs](../master/Showcase/BP_history.png)
