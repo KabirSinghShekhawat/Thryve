@@ -1,5 +1,3 @@
-// const flash = require("connect-flash") 
-
 exports.isLoggedIn = (req, res, next) => {
     if(req.isAuthenticated()) return next()
 
