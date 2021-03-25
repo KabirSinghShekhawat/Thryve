@@ -10,7 +10,5 @@ This section lets you build your custom workout.
 This section shows the health info and helps your track your diet, weight, blood pressure and sugar.
 
 # Landing
+![Landing Page](../master/Showcase/landing.png)
 
-<p align="center">
-![Landing Page](Showcase/landing.png)
-</p>
