@@ -8,3 +8,9 @@ This section lets you build your custom workout.
 
 3. Health Info:
 This section shows the health info and helps your track your diet, weight, blood pressure and sugar.
+
+# Landing
+
+<p align="center">
+<img src="Thryve/Showcase/landing.png" width="600px" >
+</p>
