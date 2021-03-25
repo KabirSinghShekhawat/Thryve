@@ -13,7 +13,9 @@ This section shows the health info and helps your track your diet, weight, blood
 ![Landing Page](../master/Showcase/landing.png)
 
 # Diets
+# Search Bar
 ![Diets Page](../master/Showcase/diets_1.png)
+# Info Card Flip
 ![Diets Page](../master/Showcase/diets_2.png)
 
 # Workouts
