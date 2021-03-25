@@ -12,5 +12,6 @@ This section shows the health info and helps your track your diet, weight, blood
 # Landing
 
 <p align="center">
-<img src="Thryve/Showcase/landing.png" width="600px" >
+![GitHub Logo](/images/logo.png)
+Format: ![Alt Text](https://github.com/KabirSinghShekhawat/Thryve/blob/master/Showcase/landing.png?raw=true)
 </p>
