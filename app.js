@@ -1,40 +1,42 @@
-//======================================================================================================================================================//
-//																		IMPORTS
-//======================================================================================================================================================//
-let express = require("express"),
-    app = express().disable("x-powered-by"),
-    // bodyParser            = require("body-parser"),
+// IMPORTS
+const express = require("express")
+const app = express().disable("x-powered-by")
+const
     morgan = require("morgan"),
     expressSanitizer = require("express-sanitizer"),
     mongoose = require("mongoose"),
     flash = require("connect-flash"),
     passport = require("passport"),
     LocalStrategy = require("passport-local"),
-    methodOverride = require("method-override"),
-    // passportLocalMongoose = require("passport-local-mongoose"),
-    User = require("./models/user"),
-    Profile = require("./models/profile"),
-    Food = require("./models/food"),
-    Exercise = require("./models/exercise"),
+    methodOverride = require("method-override")
+const
     async = require("async"),
     nodemailer = require("nodemailer"),
     crypto = require("crypto")
-const homeRoute = require('./routes/home')
-const profileRoute = require('./routes/profile')
-const historyRoute = require('./routes/history')
-const dietRoute = require('./routes/diet')
-//======================================================================================================================================================//
-//																	ENVIRONMENT SETUP
-//======================================================================================================================================================//
+const
+    User = require("./models/user"),
+    Profile = require("./models/profile"),
+    Food = require("./models/food"),
+    Exercise = require("./models/exercise")
 
-const mongoOptions = {
+const
+    homeRoute = require('./routes/home'),
+    profileRoute = require('./routes/profile'),
+    historyRoute = require('./routes/history'),
+    dietRoute = require('./routes/diet'),
+    healthInfoRoute = require('./routes/healthInfo'),
+    authRoute = require('./routes/auth')
+
+// ENVIRONMENT SETUP
+
+const mongoConfig = {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true,
     useFindAndModify: false
 }
 
-mongoose.connect("mongodb://localhost/thryve3", mongoOptions)
+mongoose.connect("mongodb://localhost/thryve3", mongoConfig)
     .then(() => {
         console.log("connected to database")
     })
@@ -51,13 +53,16 @@ app.use(express.static(__dirname + "/public"));
 app.use(methodOverride("_method"));
 app.use(flash());
 app.locals.moment = require('moment');
+
 app.use(require("express-session")({
     secret: "This is the Authentication Key",
     resave: false,
     saveUninitialized: false
 }));
+
 app.use(passport.initialize());
 app.use(passport.session());
+
 passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
@@ -70,9 +75,9 @@ app.use(function (req, res, next) {
 });
 
 require('dotenv').config()
-//======================================================================================================================================================//
-//																	  MIDDLEWARE
-//======================================================================================================================================================//
+
+//  MIDDLEWARE
+
 function isLoggedIn(req, res, next) {
     if (req.isAuthenticated()) {
         return next();
@@ -139,117 +144,27 @@ function isAdmin(req, res, next) {
     res.redirect("back");
 }
 
-//	HOME ROUTE
+//	Home Route
 app.use('/', homeRoute)
-//	PROFILE ROUTES
+//	Profile Route
 app.use('/profile', profileRoute)
-
-//	HISTORY SUBDIVISION
-//------------------------------------------------------------------------//
+//	History Route Subdivision
 app.use('/history', historyRoute)
+/*
+* Add Sugar
+* Remove Sugar
+*  */
 
-//ADD SUGAR
-//REMOVE SUGAR
-
-//	DIET ROUTES
-//------------------------------------------------------------------------------------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------------------------------------------------------//
-
-//INDEX
+//	Diet Route
 app.use('/diet', dietRoute)
+/*
+ * Index
+ * Add diet
+ * Remove Diet
+ * Change Diet
+ *  */
 
-
-//ADD
-app.post("/diet", isLoggedIn, isVerified, function (req, res) {
-    console.log("POST: /diet");
-    let userId = req.user._id;
-    let foodId = req.body.food._id;
-    User.findById(userId, function (err, user) {
-        if (err) {
-            console.log("User not found: " + err);
-        } else {
-            let isThere = false;
-            user.diet.find(function (d) {
-                if (d.food === foodId) {
-                    isThere = true;
-                    return true;
-                }
-            });
-            if (!isThere) {
-                Food.findById(foodId, function (err, food) {
-                    if (err) {
-                        console.log("Food not found: " + err);
-                    } else {
-                        food.activeUsers = food.activeUsers + 1;
-                        food.save();
-                        let food_obj = {
-                            food: food,
-                            quantity: req.body.quantity
-                        }
-                        user.diet.push(food_obj);
-                        user.save();
-                        res.redirect("/diet");
-                    }
-                });
-            } else {
-                req.flash("error", "Already present in Checkout List");
-                res.redirect("/diet");
-            }
-        }
-    });
-});
-
-//REMOVE
-app.delete("/diet", isLoggedIn, isVerified, function (req, res) {
-    console.log("DELETE: /diet");
-    let userId = req.user._id;
-    let foodId = req.body.foodInDiet._id;
-    User.findById(userId, function (err, user) {
-        let idx = undefined;
-        user.diet.find(function (d, index) {
-            {
-                if (d.food === foodId) {
-                    idx = index;
-                    return true;
-                }
-            }
-        });
-        if (idx !== -1) {
-            user.diet.splice(idx, 1);
-            user.save();
-            Food.findById(foodId, function (err, food) {
-                food.activeUsers = food.activeUsers - 1;
-                food.save();
-                res.redirect("/diet");
-            });
-        }
-    });
-});
-
-//CHANGE
-app.put("/diet", isLoggedIn, isVerified, function (req, res) {
-    console.log("PUT: /diet");
-    let userId = req.user._id;
-    let foodId = req.body.foodInDiet._id;
-    User.findById(userId, function (err, user) {
-        let idx = undefined;
-        user.diet.find(function (d, index) {
-            {
-                if (d.food === foodId) {
-                    idx = index;
-                    return true;
-                }
-            }
-        });
-        user.diet[idx].quantity = req.body.quantity;
-        user.save();
-        res.redirect("/diet");
-    });
-});
-
-//	FOOD SUBDIVISION
-//------------------------------------------------------------------------//
-//------------------------------------------------------------------------//
+//	Food Route Subdivision
 
 //NEW
 app.get("/diet/food/new", isLoggedIn, isVerified, function (req, res) {
@@ -362,11 +277,8 @@ app.delete("/diet/food/:fdid", isLoggedIn, isVerified, isFoodAuthorized, functio
     });
 });
 
-//	WORKOUT ROUTES
-//------------------------------------------------------------------------------------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------------------------------------------------------//
-
-//INDEX 
+// Workout Route
+// INDEX
 app.get("/workout", isLoggedIn, isVerified, function (req, res) {
     console.log("GET: /workout");
     let userId = req.user._id;
@@ -388,8 +300,7 @@ app.get("/workout", isLoggedIn, isVerified, function (req, res) {
         }
     });
 });
-
-//ADD
+// ADD
 app.post("/workout", isLoggedIn, isVerified, function (req, res) {
     console.log("POST: /workout");
     let userId = req.user._id;
@@ -430,8 +341,7 @@ app.post("/workout", isLoggedIn, isVerified, function (req, res) {
         }
     });
 });
-
-//REMOVE
+// REMOVE
 app.delete("/workout", isLoggedIn, isVerified, function (req, res) {
     console.log("DELETE: /workout");
     let userId = req.user._id;
@@ -457,7 +367,6 @@ app.delete("/workout", isLoggedIn, isVerified, function (req, res) {
         }
     });
 });
-
 //CHANGE
 app.put("/workout", isLoggedIn, isVerified, function (req, res) {
     console.log("PUT: /workout");
@@ -479,17 +388,12 @@ app.put("/workout", isLoggedIn, isVerified, function (req, res) {
     });
 });
 
-
-//	EXERCISE SUBDIVISION
-//------------------------------------------------------------------------//
-//------------------------------------------------------------------------//
-
+// Exercise Route
 //NEW
 app.get("/workout/exercise/new", isLoggedIn, isVerified, function (req, res) {
     console.log("GET: /workout/exercise/new");
     res.render("workout/new");
 });
-
 //CREATE
 app.post("/workout/exercise", isLoggedIn, isVerified, function (req, res) {
     console.log("POST: /workout/exercise");
@@ -510,7 +414,6 @@ app.post("/workout/exercise", isLoggedIn, isVerified, function (req, res) {
         }
     });
 });
-
 //VERIFY
 app.post("/workout/exercise/:exid/verify", isLoggedIn, isVerified, isAdmin, function (req, res) {
     let exerciseId = req.params.exid;
@@ -525,7 +428,6 @@ app.post("/workout/exercise/:exid/verify", isLoggedIn, isVerified, isAdmin, func
         }
     });
 });
-
 //SHOW
 app.get("/workout/exercise/:exid", isLoggedIn, isVerified, function (req, res) {
     let exid = req.params.exid;
@@ -538,7 +440,6 @@ app.get("/workout/exercise/:exid", isLoggedIn, isVerified, function (req, res) {
         }
     });
 });
-
 //EDIT
 app.get("/workout/exercise/:exid/edit", isLoggedIn, isVerified, isExerciseAuthorized, function (req, res) {
     let exid = req.params.exid;
@@ -547,7 +448,6 @@ app.get("/workout/exercise/:exid/edit", isLoggedIn, isVerified, isExerciseAuthor
         res.render("workout/edit", {exercise: foundExercise})
     });
 });
-
 //UPDATE
 app.put("/workout/exercise/:exid", isLoggedIn, isVerified, isExerciseAuthorized, function (req, res) {
     let exid = req.params.exid;
@@ -563,7 +463,6 @@ app.put("/workout/exercise/:exid", isLoggedIn, isVerified, isExerciseAuthorized,
         }
     });
 });
-
 //DELETE
 app.delete("/workout/exercise/:exid", isLoggedIn, isVerified, isExerciseAuthorized, function (req, res) {
     let exid = req.params.exid;
@@ -599,79 +498,16 @@ app.delete("/workout/exercise/:exid", isLoggedIn, isVerified, isExerciseAuthoriz
     });
 });
 
-//	HEALTHINFO ROUTES
-//------------------------------------------------------------------------------------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------------------------------------------------------//
-
-//INDEX
-app.get("/healthinfo", isLoggedIn, isVerified, function (req, res) {
-    console.log("GET: /healthinfo");
-    let userId = req.user._id;
-    User.findById(userId).populate("profile").exec(function (err, user) {
-        if (err) {
-            console.log(err);
-        } else {
-            res.render("healthInfo/index", {user: user});
-        }
-    });
-});
-
-//WEIGHT EDIT
-app.get("/healthinfo/weight", isLoggedIn, isVerified, function (req, res) {
-    console.log("GET: /healthinfo/weight");
-    let profileId = req.user.profile;
-    Profile.findById(profileId, function (err, foundProfile) {
-        if (err) {
-            console.log(err);
-        } else {
-            res.render("healthInfo/weight", {profile: foundProfile});
-        }
-    });
-});
-
-//UPDATE TARGET WEIGHT
-app.post("/healthinfo/targetweight", isLoggedIn, isVerified, function (req, res) {
-    console.log("POST: /history/targetweight");
-    let profileId = req.user.profile;
-    Profile.findByIdAndUpdate(profileId, {'$set': {'targetWeight': req.body.targetWeight}}, function (err) {
-        if (err) {
-            console.log(err);
-            req.flash("error", "Something went wrong");
-        }
-        res.redirect("/healthinfo");
-    });
-});
-
-
-//WEIGHT EDIT
-app.get("/healthinfo/bp", isLoggedIn, isVerified, function (req, res) {
-    console.log("GET: /healthinfo/bp");
-    let profileId = req.user.profile;
-    Profile.findById(profileId, function (err, foundProfile) {
-        if (err) {
-            console.log(err);
-        } else {
-            res.render("healthInfo/bp", {profile: foundProfile});
-        }
-    });
-});
-
-//WEIGHT EDIT
-app.get("/healthinfo/sugar", isLoggedIn, isVerified, function (req, res) {
-    console.log("GET: /healthinfo/sugar");
-    let profileId = req.user.profile;
-    Profile.findById(profileId, function (err, foundProfile) {
-        if (err) {
-            console.log(err);
-        } else {
-            res.render("healthInfo/sugar", {profile: foundProfile});
-        }
-    });
-});
+//	Health-Info Route
+app.use('/healthinfo', healthInfoRoute)
+/*
+* Index
+* Edit Weight
+* Update Target Weight
+* Edit Blood Pressure
+* Edit Sugar
+* */
 //	TEMPORARY API ROUTES
-//------------------------------------------------------------------------------------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------------------------------------------------------//
-
 app.get("/api", isLoggedIn, isVerified, function (req, res) {
     //console.log("GET: /api");
     let userId = req.user._id;
@@ -711,38 +547,13 @@ app.get("/exercises/api", isLoggedIn, isVerified, function (req, res) {
         }
     });
 });
-//	AUTHENTICATION ROUTES
-//------------------------------------------------------------------------------------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------------------------------------------------------//
 
+//	Authentication Route
+app.use('/register', authRoute)
 //REGISTER
 app.post("/register", function (req, res) {
     console.log("POST: /register");
-    let newUser = new User(
-        {
-            username: req.body.username,
-            email: req.body.email
-        }
-    );
-    if (req.body.password !== req.body.passwordCheck) {
-        req.flash("error", "Password mismatch");
-        res.redirect("/")
-    } else if (req.body.password.length < 8) {
-        req.flash("error", "Password should have minimum 8 characters.")
-        res.redirect("/");
-    } else {
-        User.register(newUser, req.body.password, function (err, user) {
-            if (err) {
-                console.log("Error in registeration: " + err);
-                req.flash("error", err.message);
-                return res.redirect("/");
-            }
-            passport.authenticate("local")(req, res, function () {
-                req.flash("success", "Complete the verification");
-                res.redirect("/otp");
-            });
-        });
-    }
+
 });
 
 //LOGIN
