@@ -1,6 +1,4 @@
 <%- include("partials/header")  %>
-
-
         <div class="w3-card-4">
             <div class="w3-display-container">
                 <img src="/assets/jumbotron.jpg" width="100%"  alt="Eat">
@@ -21,7 +19,7 @@
         <span onclick="document.getElementById('login').style.display='none'"
         class="w3-button w3-display-topright w3-hover-black w3-hover-opacity">&times;</span>
         <h1>Login</h1>
-        <form action="/login" method="POST">
+        <form action="/auth/login" method="POST">
             <p>
                 <label>Name:</label>
                 <input class="w3-input" type="text" name="username" style="width: 90%;color:black;" required>
@@ -34,7 +32,7 @@
                 <button class="w3-button w3-section w3-teal w3-ripple"> Log In </button>
             </p>
             <p>
-                <a href="/passwordreset">Forgot Password?</a>
+                <a href="/auth/reset/password">Forgot Password?</a>
             </p>
         </form>
       </div>
@@ -47,7 +45,7 @@
         <span onclick="document.getElementById('signup').style.display='none'"
         class="w3-button w3-display-topright w3-hover-black w3-hover-opacity">&times;</span>
         <h1>Sign Up</h1>
-        <form action="/register" method="POST">
+        <form action="/auth/register" method="POST">
             <p>
                 <label>Username:</label>
                 <input class="w3-input" type="text" name="username" style="width: 90%;color: black;" required>

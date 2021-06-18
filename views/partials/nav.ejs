@@ -24,7 +24,7 @@
                     <a href="#" class="w3-btn"><% if(currentUser.admin){ %><i class="fa fa-hashtag" style="font-size:24px; color: red;"></i><% } %> <i style="font-size: 24px;margin-right: 10px;" class="fa fa-user-circle" aria-hidden="true"></i></a>
                     <div class="w3-dropdown-content w3-bar-block w3-border dropdown_user">
                         <a href="/profile" class="w3-bar-item w3-button"><%= currentUser.username %></a>
-                        <a href="/logout" class="w3-bar-item w3-button">Log Out</a>
+                        <a href="/auth/logout" class="w3-bar-item w3-button">Log Out</a>
                     </div>
                     <!-- <strong style="font-size: large;"><%= currentUser.username %> </strong> -->
             </div>

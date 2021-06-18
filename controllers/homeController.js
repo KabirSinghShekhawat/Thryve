@@ -1,12 +1,10 @@
 const User = require('./../models/user')
 
 exports.landingPage = (request, response) => {
-    console.log('GET: /')
     response.render('landing')
 }
 
 exports.home = async (request, response) => {
-    console.log('GET: /home')
     let userId = request.user._id
     await User
         .findById(userId)
@@ -22,7 +20,6 @@ exports.home = async (request, response) => {
 
 exports.food = async (request, response) => {
     let userId = request.user._id
-    console.log('PUT: /home/food')
     await User
         .findById(userId)
         .populate({ path: 'diet.food' })
@@ -44,7 +41,6 @@ exports.food = async (request, response) => {
 
 exports.exercises = async (request, response) => {
     let userId = request.user._id
-    console.log('PUT: /home/exercises')
     await User
         .findById(userId)
         .populate({ path: 'workout.exercise' })

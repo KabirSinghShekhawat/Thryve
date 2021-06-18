@@ -19,7 +19,7 @@
             <h4 class="w3-margin-top"><strong>Age : </strong><%= moment(profile.dob).fromNow().slice(0, moment(profile.dob).fromNow().length-4) %></h4>
         </div>
 <div class="w3-container w3-margin-top">
-    <form action="/passwordreset" method="POST">
+    <form action="/auth/reset/password" method="POST">
         <p class="w3-center">
             <a class="w3-button w3-blue w3-ripple" style="text-decoration:none;margin-right:5px;" href="/profile/edit">Edit Profile</a>
             <button class="w3-button  w3-teal w3-ripple" name="email" value="<%= currentUser.email %>"> Change Password </button>

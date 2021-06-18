@@ -106,49 +106,51 @@ exports.deleteBloodPressure = async (req, res) => {
 exports.postSugar = async (req, res) => {
     try {
         const {profile: profileId} = req.user
-        Profile.findByIdAndUpdate(profileId, {'$set': {'sugar': req.body.sugar}}, (err, foundProfile) => {
-            if (err) throw new Error(err)
-            let newSugar = {
-                sugar: req.body.sugar,
-                timestamp: new Date(Date.now())
-            }
-            foundProfile.sugarHist.push(newSugar);
-            foundProfile.save();
-            return res.redirect("/healthinfo");
-        })
+        Profile.findByIdAndUpdate(profileId,
+            {'$set': {'sugar': req.body.sugar}}, (err, foundProfile) => {
+                if (err) throw new Error(err)
+                let newSugar = {
+                    sugar: req.body.sugar,
+                    timestamp: new Date(Date.now())
+                }
+                foundProfile.sugarHist.push(newSugar);
+                foundProfile.save();
+                return res.redirect("/healthinfo");
+            })
     } catch (err) {
         throw new Error(err)
     }
 }
 
 exports.deleteSugar = async (req, res) => {
-    const {profile: profileId} = req.user.profile
+    const {profile: profileId} = req.user
+    const sugarProfile = await Profile.findById(profileId)
 
-    Profile.findById(profileId, (err, profile) => {
-        if (err) throw new Error(err)
-
-        const current_timestamp = new Date(req.body.timestamp).toISOString()
-        let idx = -1
-
-        profile.sugarHist.find((sugar, index) => {
-            let timestamp = new Date(new Date(sugar.timestamp).setMilliseconds(0)).toISOString();
-            if (timestamp === current_timestamp)
-                idx = index
-        })
-
-        if (profile.sugarHist.length > 1 && idx !== -1) {
-            profile.sugarHist.splice(idx, 1)
-            profile.sugar = profile.sugarHist[profile.sugarHist.length - 1].sugar
-            profile.save()
-            return res.redirect("/healthinfo")
-        }
-
-        if (idx === 0) {
-            req.flash("error", "Blood Sugar History cannot be empty. Please add a data to delete.")
-            return res.redirect("/healthinfo/sugar")
-        }
-
+    if(typeof sugarProfile === null) {
         req.flash("error", "Something went wrong")
-        res.redirect("/healthinfo")
+        return res.redirect("/healthinfo")
+    }
+
+    const current_timestamp = new Date(req.body.timestamp).toISOString()
+    let idx = -1
+    sugarProfile.sugarHist.find((sugar, index) => {
+        let timestamp = new Date(new Date(sugar.timestamp).setMilliseconds(0)).toISOString();
+        if (timestamp === current_timestamp)
+            idx = index
     })
+
+    if (sugarProfile.sugarHist.length > 1 && idx !== -1) {
+        sugarProfile.sugarHist.splice(idx, 1)
+        sugarProfile.sugar = sugarProfile.sugarHist[sugarProfile.sugarHist.length - 1].sugar
+        sugarProfile.save()
+        return res.redirect("/healthinfo")
+    }
+
+    if (idx === 0) {
+        req.flash("error", "Blood Sugar History cannot be empty. Please add a data to delete.")
+        return res.redirect("/healthinfo/sugar")
+    }
+
+    req.flash("error", "Something went wrong")
+    return res.redirect("/healthinfo")
 }
