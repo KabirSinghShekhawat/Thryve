@@ -26,7 +26,7 @@ const
     dietRoute = require('./routes/diet'),
     healthInfoRoute = require('./routes/healthInfo'),
     authRoute = require('./routes/auth')
-
+    otpRoute = require('./routes/otp')
 // ENVIRONMENT SETUP
 
 const mongoConfig = {
@@ -499,7 +499,6 @@ app.delete("/workout/exercise/:exid", isLoggedIn, isVerified, isExerciseAuthoriz
 });
 
 //	Health-Info Route
-app.use('/healthinfo', healthInfoRoute)
 /*
 * Index
 * Edit Weight
@@ -507,6 +506,9 @@ app.use('/healthinfo', healthInfoRoute)
 * Edit Blood Pressure
 * Edit Sugar
 * */
+app.use('/healthinfo', healthInfoRoute)
+/* END */
+
 //	TEMPORARY API ROUTES
 app.get("/api", isLoggedIn, isVerified, function (req, res) {
     //console.log("GET: /api");
@@ -549,87 +551,34 @@ app.get("/exercises/api", isLoggedIn, isVerified, function (req, res) {
 });
 
 //	Authentication Route
-app.use('/auth', authRoute)
 /*
 * Register route
 * Login route
 * Logout route
 * */
+app.use('/auth', authRoute)
+/* END */
 
-//	OTP SUBDIVISION
-//INDEX
-app.get("/otp", isLoggedIn, function (req, res) {
-    console.log("GET: /otpcheck");
-    res.render("mailerOtp");
-});
+//	OTP Route subdivision
+/*
+* Index route
+* CREATE
+* create otp route
+* ENTER
+* get otp check
+* post otp check
+*
+* */
+app.use('/otp', otpRoute)
+/* END */
 
-//CREATE
-app.post('/otp', isLoggedIn, function (req, res) {
-    let otp = Math.floor(100000 + Math.random() * 900000);
-    User.findOne({email: req.user.email}, function (err, user) {
-        user.otp = otp;
-        user.otpExpires = Date.now() + 3600000;
-        user.save();
-        let smtpTransport = nodemailer.createTransport({
-            service: 'Gmail',
-            auth: {
-                user: process.env.NODEMAILER_USER,
-                pass: process.env.NODEMAILER_PASS
-            }
-        });
-        let mailOptions = {
-            to: req.user.email,
-            from: process.env.NODEMAILER_USER,
-            subject: 'Verification',
-            text: 'Thank you for registering.\nPlease complete the verification process.\n\n' +
-                'OTP: ' + otp
-        };
-        smtpTransport.sendMail(mailOptions, function (err) {
-            console.log('mail sent');
-            req.flash('success', 'An e-mail has been sent to ' + user.email + ' with further instructions.');
-            res.redirect("/otpcheck");
-        });
-    });
-});
-
-//ENTER
-app.get("/otpcheck", isLoggedIn, function (req, res) {
-    console.log("GET: /otpcheck");
-    res.render("otpcheck");
-});
-
-//CHECK
-app.post("/otpcheck", isLoggedIn, function (req, res) {
-    User.findOne({email: req.user.email, otpExpires: {$gt: Date.now()}}, function (err, user) {
-        if (!user) {
-            req.flash("error", "OTP invalid or expired.");
-            return res.redirect("/otp");
-        }
-
-        if (user.otp === req.body.otp) {
-            user.verified = true;
-            user.otp = undefined;
-            user.otpExpires = undefined;
-            user.save();
-            req.flash("success", "Verification completed. Please complete your profile.")
-            res.redirect("/profile/new");
-        } else {
-            user.otp = undefined;
-            user.otpExpires = undefined;
-            req.flash("error", "OTP invalid");
-            res.redirect("/otp");
-        }
-    });
-});
-
-//	PASSWORD RESET SUBDIVISION
-//------------------------------------------------------------------------//
-//------------------------------------------------------------------------//
-
-//ENTER
-// get password reset
-//CREATE
-// post password reset
+// Password Reset route subdivision
+/*
+* ENTER
+* GET: password reset
+* CREATE
+* POST: password reset
+* */
 
 //TOKEN LINK
 app.get("/reset/:token", function (req, res) {
