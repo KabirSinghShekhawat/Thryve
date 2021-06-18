@@ -26,7 +26,7 @@ const
     dietRoute = require('./routes/diet'),
     healthInfoRoute = require('./routes/healthInfo'),
     authRoute = require('./routes/auth')
-    otpRoute = require('./routes/otp')
+otpRoute = require('./routes/otp')
 // ENVIRONMENT SETUP
 
 const mongoConfig = {
@@ -580,117 +580,16 @@ app.use('/otp', otpRoute)
 * POST: password reset
 * */
 
-//TOKEN LINK
-app.get("/reset/:token", function (req, res) {
-    User.findOne({resetPasswordToken: req.params.token, resetPasswordExpires: {$gt: Date.now()}}, function (err, user) {
-        if (!user) {
-            req.flash("error", "Password reset token is invalid or expired.");
-            return res.redirect('back');
-        }
+// Token Route
+/*
+* GET: otp/reset/:token
+* POST: otp/reset/:token
+* */
 
-        res.render("reset", {token: req.params.token});
-    });
-});
-
-//UPDATE
-app.post('/reset/:token', function (req, res) {
-    async.waterfall([
-            function (done) {
-                User.findOne({
-                    resetPasswordToken: req.params.token,
-                    resetPasswordExpires: {$gt: Date.now()}
-                }, function (err, user) {
-                    if (!user) {
-                        req.flash('error', 'Password reset token is invalid or has expired.');
-                        return res.redirect('back');
-                    }
-                    if (req.body.password === req.body.confirm) {
-                        user.setPassword(req.body.password, function (err) {
-                            user.resetPasswordToken = undefined;
-                            user.resetPasswordExpires = undefined;
-
-                            user.save(function (err) {
-                                req.logIn(user, function (err) {
-                                    done(err, user);
-                                });
-                            });
-                        })
-                    } else {
-                        req.flash("error", "Passwords do not match.");
-                        return res.redirect('back');
-                    }
-                });
-            },
-            function (user, done) {
-                let smtpTransport = nodemailer.createTransport({
-                    service: 'Gmail',
-                    auth: {
-                        user: process.env.NODEMAILER_USER,
-                        pass: process.env.NODEMAILER_PASS
-                    }
-                });
-                let mailOptions = {
-                    to: user.email,
-                    from: process.env.NODEMAILER_USER,
-                    subject: 'Your password has been changed',
-                    text: 'Hello,\n\n' +
-                        'This is a confirmation that the password for your account ' + user.email + ' has just been changed.\n'
-                };
-                smtpTransport.sendMail(mailOptions, function (err) {
-                    req.flash('success', 'Success! Your password has been changed.');
-                    done(err);
-                });
-            }
-        ],
-        function (err) {
-            res.redirect('/home');
-        });
-});
-
-//	ADMIN REGISTRATION SUBDIVISION
-//------------------------------------------------------------------------//
-//------------------------------------------------------------------------//
-
-//FORM
-app.get("/applyadmin", isLoggedIn, isVerified, function (req, res) {
-    console.log("GET: /applyadmin");
-    res.render("keyForm");
-});
-
-//CREATE
-app.post("/applyadmin", isLoggedIn, isVerified, function (req, res) {
-    console.log("POST: /applyadmin");
-    let userId = req.user._id;
-    let key = process.env.ADMIN_KEY;
-    if (key === req.body.key) {
-        User.findById(userId, function (err, user) {
-            if (err) {
-                console.log(err);
-                req.flash("error", "Something went wrong");
-                res.redirect("/home");
-            } else {
-                user.admin = true;
-                user.save();
-                req.flash("success", "You are now an Admin User");
-                res.redirect("/home");
-            }
-        });
-    } else {
-        req.flash("error", "Incorrect Key. Admin privileges denied.");
-        res.redirect("/home");
-    }
-
-});
-
-//======================================================================================================================================================//
-//																		FUNCTIONS
-//======================================================================================================================================================//
-function StrCmpExp(text) {
-    return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-}
-
-function AnyExp(text) {
-    return text.replace(text, ".*");
-}
+//	Admin Route subdivision
+/*
+* GET: Form apply admin /auth/admin
+* POST: /auth/admin
+* */
 
 module.exports = app;
