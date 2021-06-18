@@ -5,7 +5,7 @@
     <a href="/diet" class="w3-bar-item w3-button">DIET MAKER</a>
     <a href="/workout" class="w3-bar-item w3-button">WORKOUT BUILDER</a>
     <a href="/healthinfo" class="w3-bar-item w3-button">HEALTH INFO</a>
-    <% if(currentUser && !currentUser.admin){ %><a href="/applyadmin" class="w3-bar-item w3-button">ADMIN</a><% } %> 
+    <% if(currentUser && !currentUser.admin){ %><a href="/auth/admin" class="w3-bar-item w3-button">ADMIN</a><% } %>
   </div>
   
   <!-- Page Content -->
@@ -33,7 +33,7 @@
           <button class="w3-button w3-xxlarge w3-black" onclick="w3_open()">&#9776;</button>
       </div>
       
-  <div >
+  <div>
     <% if(error && error.length > 0){ %>
         <div style="color: white; background-color: red;">
             <li class="w3-display-container" style="list-style-type:none;">        
@@ -53,20 +53,3 @@
         </div>
     <% } %>
 </div>
-
-
-
-        <!-- <div >
-            <% if(error && error.length > 0){ %>
-                <div style="color: white; background-color: red;">
-                    <%= error %>
-                </div>
-            <% } %>
-            <% if(success && success.length > 0){ %>
-                <div style="color: white;background-color: darkgreen;">
-                    <%= success %>
-                </div>
-            <% } %>
-        </div> -->
-
-        
