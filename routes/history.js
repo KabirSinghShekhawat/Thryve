@@ -16,5 +16,6 @@ router
 router
     .route('/sugar')
     .post(auth.isLoggedIn, auth.isVerified, historyController.postSugar)
+    .delete(auth.isLoggedIn, auth.isVerified, historyController.deleteSugar)
 
 module.exports = router

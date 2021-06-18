@@ -549,33 +549,14 @@ app.get("/exercises/api", isLoggedIn, isVerified, function (req, res) {
 });
 
 //	Authentication Route
-app.use('/register', authRoute)
-//REGISTER
-app.post("/register", function (req, res) {
-    console.log("POST: /register");
-
-});
-
-//LOGIN
-app.post("/login", passport.authenticate("local",
-    {
-        successRedirect: "/home",
-        failureRedirect: "/",
-        failureFlash: true
-    }), function (req, res) {
-});
-
-//LOGOUT
-app.get("/logout", function (req, res) {
-    req.logout();
-    req.flash("success", "Successfully logged out");
-    res.redirect("/");
-});
+app.use('/auth', authRoute)
+/*
+* Register route
+* Login route
+* Logout route
+* */
 
 //	OTP SUBDIVISION
-//------------------------------------------------------------------------//
-//------------------------------------------------------------------------//
-
 //INDEX
 app.get("/otp", isLoggedIn, function (req, res) {
     console.log("GET: /otpcheck");
@@ -646,64 +627,9 @@ app.post("/otpcheck", isLoggedIn, function (req, res) {
 //------------------------------------------------------------------------//
 
 //ENTER
-app.get("/passwordreset", function (req, res) {
-    console.log("GET: /passwordreset");
-    res.render("mailer");
-});
-
+// get password reset
 //CREATE
-app.post('/passwordreset', function (req, res, next) {
-    async.waterfall([
-            function (done) {
-                crypto.randomBytes(20, function (err, buf) {
-                    let token = buf.toString('hex');
-                    done(err, token);
-                });
-            },
-            function (token, done) {
-                User.findOne({email: req.body.email}, function (err, user) {
-                    if (!user) {
-                        req.flash('error', 'No account with that email address exists.');
-                        return res.redirect('/passwordreset');
-                    }
-
-                    user.resetPasswordToken = token;
-                    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
-
-                    user.save(function (err) {
-                        done(err, token, user);
-                    });
-                });
-            },
-            function (token, user, done) {
-                let smtpTransport = nodemailer.createTransport({
-                    service: 'Gmail',
-                    auth: {
-                        user: 'contact.thryve.health@gmail.com',
-                        pass: "********"
-                    }
-                });
-                let mailOptions = {
-                    to: user.email,
-                    from: 'contact.thryve.health@gmail.com',
-                    subject: 'Password Reset',
-                    text: 'You are receiving this because you have requested the reset of the password for your account.\n\n' +
-                        'Please click on the following link to complete the process:\n\n' +
-                        'http://' + req.headers.host + '/reset/' + token + '\n\n' +
-                        'If you did not request this, please ignore this email and your password will remain unchanged.\n'
-                };
-                smtpTransport.sendMail(mailOptions, function (err) {
-                    console.log('mail sent');
-                    req.flash('success', 'An e-mail has been sent to ' + user.email + ' with further instructions.');
-                    done(err, 'done');
-                });
-            }
-        ],
-        function (err) {
-            if (err) return next(err);
-            res.redirect('back');
-        });
-});
+// post password reset
 
 //TOKEN LINK
 app.get("/reset/:token", function (req, res) {
