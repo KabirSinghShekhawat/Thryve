@@ -77,9 +77,6 @@ exports.postNewPassword = (req, res, next) => {
                         pass: process.env.NODEMAILER_PASS
                     }
                 });
-                console.log(process.env.NODEMAILER_USER)
-                console.log(process.env.NODEMAILER_PASS)
-                console.log(user.email)
                 let mailOptions = {
                     to: user.email,
                     from: process.env.NODEMAILER_USER,

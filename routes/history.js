@@ -1,5 +1,5 @@
-const express = require('express');
-const router = express.Router();
+const express = require('express')
+const router = express.Router()
 const auth = require('./../controllers/auth/flash')
 const historyController = require('./../controllers/historyController')
 
