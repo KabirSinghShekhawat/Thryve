@@ -13,4 +13,8 @@ router
     .post(auth.isLoggedIn, auth.isVerified, historyController.postBloodPressure)
     .delete(auth.isLoggedIn, auth.isVerified, historyController.deleteBloodPressure)
 
+router
+    .route('/sugar')
+    .post(auth.isLoggedIn, auth.isVerified, historyController.postSugar)
+
 module.exports = router
