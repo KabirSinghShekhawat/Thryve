@@ -10,12 +10,7 @@ const
     LocalStrategy = require("passport-local"),
     methodOverride = require("method-override")
 const
-    async = require("async"),
-    nodemailer = require("nodemailer"),
-    crypto = require("crypto")
-const
     User = require("./models/user"),
-    Profile = require("./models/profile"),
     Food = require("./models/food"),
     Exercise = require("./models/exercise")
 
@@ -25,8 +20,9 @@ const
     historyRoute = require('./routes/history'),
     dietRoute = require('./routes/diet'),
     healthInfoRoute = require('./routes/healthInfo'),
-    authRoute = require('./routes/auth')
-otpRoute = require('./routes/otp')
+    authRoute = require('./routes/auth'),
+    otpRoute = require('./routes/otp')
+
 // ENVIRONMENT SETUP
 
 const mongoConfig = {
@@ -77,7 +73,6 @@ app.use(function (req, res, next) {
 require('dotenv').config()
 
 //  MIDDLEWARE
-
 function isLoggedIn(req, res, next) {
     if (req.isAuthenticated()) {
         return next();
@@ -92,27 +87,6 @@ function isVerified(req, res, next) {
     }
     req.flash("error", "Verification of account is pending");
     res.redirect("/otp");
-}
-
-function isFoodAuthorized(req, res, next) {
-    if (req.user.admin) {
-        return next();
-    } else {
-        let foodId = req.params.fdid;
-        Food.findById(foodId, function (err, food) {
-            if (err) {
-                req.flash("error", "Something went wrong");
-                res.redirect("/diet");
-            } else {
-                if (!food.verified && food.addedBy.equals(req.user._id)) {
-                    return next();
-                } else {
-                    req.flash("error", "Something went wrong");
-                    res.redirect("/diet");
-                }
-            }
-        });
-    }
 }
 
 function isExerciseAuthorized(req, res, next) {
@@ -144,139 +118,10 @@ function isAdmin(req, res, next) {
     res.redirect("back");
 }
 
-//	Home Route
 app.use('/', homeRoute)
-//	Profile Route
 app.use('/profile', profileRoute)
-//	History Route Subdivision
 app.use('/history', historyRoute)
-/*
-* Add Sugar
-* Remove Sugar
-*  */
-
-//	Diet Route
 app.use('/diet', dietRoute)
-/*
- * Index
- * Add diet
- * Remove Diet
- * Change Diet
- *  */
-
-//	Food Route Subdivision
-
-//NEW
-app.get("/diet/food/new", isLoggedIn, isVerified, function (req, res) {
-    console.log("GET: /diet/food/new");
-    Food.distinct('categoryTag', function (err, categories) {
-        res.render("diet/new", {categories: categories});
-    });
-});
-
-//CREATE
-app.post("/diet/food", isLoggedIn, isVerified, function (req, res) {
-    console.log("POST: /diet/food");
-    let food = req.body.food;
-    food.name = food.name.toLowerCase();
-    food.categoryTag = food.categoryTag.toLowerCase();
-    food.proteinTag = food.proteinTag.toLowerCase();
-    food.fatTag = food.fatTag.toLowerCase();
-    food.carbohydratesTag = food.carbohydratesTag.toLowerCase();
-    food.energy.unit = food.energy.unit.toLowerCase();
-    food.nutrients.protein.unit = food.nutrients.protein.unit.toLowerCase();
-    food.nutrients.fat.unit = food.nutrients.fat.unit.toLowerCase();
-    food.nutrients.carbohydrates.unit = food.nutrients.carbohydrates.unit.toLowerCase();
-    food.addedBy = req.user;
-    Food.create(food, function (err) {
-        if (err) {
-            console.log(err);
-            req.flash("error", "Something went wrong");
-            res.redirect("/diet");
-        } else {
-            req.flash("success", "Successfully Submitted.");
-            res.redirect("/diet");
-        }
-    });
-});
-
-//VERIFY
-app.post("/diet/food/:fdid/verify", isLoggedIn, isVerified, isAdmin, function (req, res) {
-    let foodId = req.params.fdid;
-    Food.findById(foodId, function (err, food) {
-        if (err) {
-            console.log(err);
-        } else {
-            food.verified = true;
-            food.verifiedBy = req.user;
-            food.save();
-            res.redirect("/diet");
-        }
-    });
-});
-
-//EDIT
-app.get("/diet/food/:fdid/edit", isLoggedIn, isVerified, isFoodAuthorized, function (req, res) {
-    let foodId = req.params.fdid;
-    console.log("/diet/food/" + foodId + "/edit");
-    Food.findById(foodId, function (err, food) {
-        if (err) {
-            console.log(err);
-        } else {
-            res.render("diet/edit", {food: food});
-        }
-    });
-});
-
-//UPDATE
-app.put("/diet/food/:fdid", isLoggedIn, isVerified, isFoodAuthorized, function (req, res) {
-    let foodId = req.params.fdid;
-    Food.findByIdAndUpdate(foodId, req.body.food, function (err) {
-        if (err) {
-            console.log(err);
-            req.flash("error", "Something went wrong");
-            res.redirect("/diet");
-        } else {
-            req.flash("success", "Update Successful");
-            res.redirect("/diet");
-        }
-    })
-});
-
-//DELETE
-app.delete("/diet/food/:fdid", isLoggedIn, isVerified, isFoodAuthorized, function (req, res) {
-    let foodId = req.params.fdid;
-    Food.findByIdAndRemove(foodId, function (err) {
-        if (err) {
-            console.log(err);
-            req.flash("error", "Something went wrong");
-            res.redirect("/diet");
-        } else {
-            req.flash("success", "Food deleted");
-            User.find({}, function (err, users) {
-                users.forEach(function (user) {
-                    User.findById(user._id, function (err, user) {
-                        let idx = undefined;
-                        user.diet.find(function (d, index) {
-                            {
-                                if (d.food === foodId) {
-                                    idx = index;
-                                    return true;
-                                }
-                            }
-                        });
-                        if (idx !== -1) {
-                            user.diet.splice(idx, 1);
-                            user.save();
-                        }
-                    });
-                });
-                res.redirect("/diet");
-            });
-        }
-    });
-});
-
 // Workout Route
 // INDEX
 app.get("/workout", isLoggedIn, isVerified, function (req, res) {
@@ -498,18 +343,8 @@ app.delete("/workout/exercise/:exid", isLoggedIn, isVerified, isExerciseAuthoriz
     });
 });
 
-//	Health-Info Route
-/*
-* Index
-* Edit Weight
-* Update Target Weight
-* Edit Blood Pressure
-* Edit Sugar
-* */
 app.use('/healthinfo', healthInfoRoute)
-/* END */
 
-//	TEMPORARY API ROUTES
 app.get("/api", isLoggedIn, isVerified, function (req, res) {
     //console.log("GET: /api");
     let userId = req.user._id;
@@ -550,46 +385,8 @@ app.get("/exercises/api", isLoggedIn, isVerified, function (req, res) {
     });
 });
 
-//	Authentication Route
-/*
-* Register route
-* Login route
-* Logout route
-* */
 app.use('/auth', authRoute)
-/* END */
-
-//	OTP Route subdivision
-/*
-* Index route
-* CREATE
-* create otp route
-* ENTER
-* get otp check
-* post otp check
-*
-* */
 app.use('/otp', otpRoute)
-/* END */
 
-// Password Reset route subdivision
-/*
-* ENTER
-* GET: password reset
-* CREATE
-* POST: password reset
-* */
 
-// Token Route
-/*
-* GET: otp/reset/:token
-* POST: otp/reset/:token
-* */
-
-//	Admin Route subdivision
-/*
-* GET: Form apply admin /auth/admin
-* POST: /auth/admin
-* */
-
-module.exports = app;
+module.exports = app

@@ -89,15 +89,18 @@ exports.deleteBloodPressure = async (req, res) => {
             profile.bpHist.splice(idx, 1)
             profile.bp = profile.bpHist[profile.bpHist.length - 1].bp
             await profile.save()
-            res.redirect('/healthinfo')
-        } else if (profile.bpHist.length === 1) {
-            req.flash('error', 'Blood Pressure history cannot be empty. Please add some weight to delete.')
-            res.redirect('/healthinfo/bp')
-        } else {
-            req.flash('error', 'Something went wrong')
-            res.redirect('/healthinfo')
+            return res.redirect('/healthinfo')
         }
 
+        if (profile.bpHist.length === 1) {
+            req.flash('error',
+                'Blood Pressure history cannot be empty.' +
+                ' Please add some weight to delete.')
+            return res.redirect('/healthinfo/bp')
+        }
+
+        req.flash('error', 'Something went wrong')
+        return res.redirect('/healthinfo')
     } catch (err) {
         throw new Error(err)
     }

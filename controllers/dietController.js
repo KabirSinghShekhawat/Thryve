@@ -146,6 +146,104 @@ exports.removeDiet = async (req, res) => {
     return res.redirect("/diet")
 }
 
+exports.getNewFood = async (req, res) => {
+    const foodCategories = await Food.distinct('categoryTag')
+    return res.render('diet/new', {categories: foodCategories})
+}
+
+exports.createNewFood = async (req, res) => {
+    const
+        {food} = req.body,
+        addedBy = req.user
+
+    if (!addedBy) {
+        req.flash('error', 'No user specified')
+        return res.redirect('/diet')
+    }
+
+    const newFood = getNewFood(food, addedBy)
+
+    try {
+        await Food.create(newFood)
+        req.flash("success", "Successfully Submitted.")
+        return res.redirect("/diet")
+    } catch (err) {
+        req.flash('error', 'An error occurred: ' + err)
+        return res.redirect('/diet')
+    }
+
+}
+
+exports.verifyFood = async (req, res) => {
+    const {fdid: foodId} = req.params
+    const food = await Food.findById(foodId)
+
+    if (!food) throw new Error(err.message)
+
+    food.verified = true
+    food.verifiedBy = req.user
+    await food.save()
+    return res.redirect('/diet')
+}
+
+exports.getFoodEditor = async (req, res) => {
+    const {fdid: foodId} = req.params
+    const food = await Food.findById(foodId)
+
+    if (!food) throw new Error(err.message)
+    return res.render('diet/edit', {food: food})
+}
+
+exports.updateFood = async (req, res) => {
+    const {fdid: foodId} = req.params
+    try {
+        await Food.findByIdAndUpdate(foodId, req.body.food)
+        req.flash('success', 'Update Successful')
+    } catch (err) {
+        req.flash('error', 'Something went wrong')
+    } finally {
+        res.redirect("/diet")
+    }
+}
+
+exports.deleteFood = async (req, res) => {
+    const {fdid: foodId} = req.params
+    await Food.findByIdAndRemove(foodId)
+    req.flash("success", "Food deleted")
+
+    const users = await User.find({})
+    for (let user of users) {
+        const currentUser = await User.findById(user._id)
+        const idx = findFoodIndex(currentUser.diet, foodId)
+
+        if (idx === -1) continue
+        currentUser.diet.splice(idx, 1)
+        await currentUser.save()
+    }
+    return res.redirect('/diet')
+}
+
+function getNewFood(food, addedBy) {
+    const {energy, nutrients} = food
+
+    energy.unit = energy.unit.toLowerCase()
+    nutrients.protein.unit = nutrients.protein.unit.toLowerCase()
+    nutrients.fat.unit = nutrients.fat.unit.toLowerCase()
+    nutrients.carbohydrates.unit = nutrients.carbohydrates.unit.toLowerCase()
+
+    return {
+        ...food,
+        name: food.name.toLowerCase(),
+        categoryTag: food.categoryTag.toLowerCase(),
+        proteinTag: food.proteinTag.toLowerCase(),
+        fatTag: food.fatTag.toLowerCase(),
+        carbohydratesTag: food.carbohydratesTag.toLowerCase(),
+        energy,
+        nutrients,
+        addedBy
+    }
+}
+
 function findFoodIndex(diet, foodId) {
     if (typeof diet === 'undefined' || diet.length === 0) return -1
     let foodIndex = -1
