@@ -15,6 +15,7 @@ const
     Exercise = require("./models/exercise")
 
 const
+    workoutRoute = require('./routes/workout'),
     homeRoute = require('./routes/home'),
     profileRoute = require('./routes/profile'),
     historyRoute = require('./routes/history'),
@@ -122,117 +123,12 @@ app.use('/', homeRoute)
 app.use('/profile', profileRoute)
 app.use('/history', historyRoute)
 app.use('/diet', dietRoute)
+app.use('/workouts', workoutRoute)
 // Workout Route
 // INDEX
-app.get("/workout", isLoggedIn, isVerified, function (req, res) {
-    console.log("GET: /workout");
-    let userId = req.user._id;
-    Exercise.find({}, function (err, allExercises) {
-        if (err) {
-            console.log(err);
-        } else {
-            User.findById(userId).populate({path: "workout.exercise"}).exec(function (err, foundUser) {
-                if (err) {
-                    console.log(err);
-                } else {
-                    res.render("workout/index", {
-                        user: foundUser,
-                        exercises: allExercises
-                    });
-                }
-            });
-
-        }
-    });
-});
 // ADD
-app.post("/workout", isLoggedIn, isVerified, function (req, res) {
-    console.log("POST: /workout");
-    let userId = req.user._id;
-    let exerciseId = req.body.exercise._id;
-    User.findById(userId, function (err, user) {
-        if (err) {
-            console.log("User not found: " + err);
-        } else {
-            let isThere = false;
-            user.workout.find(function (w, index) {
-                {
-                    if (w.exercise === exerciseId) {
-                        isThere = true;
-                        return true;
-                    }
-                }
-            });
-            if (!isThere) {
-                Exercise.findById(exerciseId, function (err, exercise) {
-                    if (err) {
-                        console.log("Exercise not found: " + err);
-                    } else {
-                        exercise.activeUsers = exercise.activeUsers + 1;
-                        exercise.save();
-                        let obj = {
-                            exercise: exercise,
-                            duration: req.body.duration
-                        }
-                        user.workout.push(obj);
-                        user.save();
-                        res.redirect("/workout");
-                    }
-                });
-            } else {
-                req.flash("error", "Already present in Checkout List");
-                res.redirect("/workout");
-            }
-        }
-    });
-});
 // REMOVE
-app.delete("/workout", isLoggedIn, isVerified, function (req, res) {
-    console.log("DELETE: /workout");
-    let userId = req.user._id;
-    let exerciseId = req.body.exercise._id;
-    User.findById(userId, function (err, user) {
-        let idx = undefined;
-        user.workout.find(function (w, index) {
-            {
-                if (w.exercise === exerciseId) {
-                    idx = index;
-                    return true;
-                }
-            }
-        });
-        if (idx !== -1) {
-            user.workout.splice(idx, 1);
-            user.save();
-            Exercise.findById(exerciseId, function (err, exercise) {
-                exercise.activeUsers = exercise.activeUsers - 1;
-                exercise.save();
-                res.redirect("/workout");
-            });
-        }
-    });
-});
 //CHANGE
-app.put("/workout", isLoggedIn, isVerified, function (req, res) {
-    console.log("PUT: /workout");
-    let userId = req.user._id;
-    let exerciseId = req.body.exercise._id;
-    User.findById(userId, function (err, user) {
-        let idx = undefined;
-        user.workout.find(function (w, index) {
-            {
-                if (w.exercise === exerciseId) {
-                    idx = index;
-                    return true;
-                }
-            }
-        });
-        user.workout[idx].duration = req.body.duration;
-        user.save();
-        res.redirect("/workout");
-    });
-});
-
 // Exercise Route
 //NEW
 app.get("/workout/exercise/new", isLoggedIn, isVerified, function (req, res) {

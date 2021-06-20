@@ -36,11 +36,15 @@
             <h1 class="w3-center homeh1 w3-light-gray">CURRENT DIET</h1>
 			<ul class="w3-ul sectionList">
                 <form action="/home/foods?_method=PUT" method="POST" style="padding-bottom: 2px;">
-                    <% user.diet.forEach(function(foodInDiet){ %>
+                    <% user.diet.forEach((foodInDiet) => { %>
                         <li style="text-transform: capitalize;">
                             <div style="margin-bottom: 0;padding: 10px;">
                             <%= foodInDiet.food.name %>
-                                <div style="display: inline;"><input  class="w3-check" style="width:20px;height:20px;float: right;" type="checkbox" name="tick[<%= foodInDiet.food.name %>]" value="<%= foodInDiet.food._id %>" <%if(foodInDiet.check){%> checked <%}%>></div>
+                                <div style="display: inline;">
+                                    <input  class="w3-check" style="width:20px;height:20px;float: right;" type="checkbox"
+                                            name="tick[<%= foodInDiet.food.name %>]"
+                                            value="<%= foodInDiet.food._id %>"
+                                    <%if(foodInDiet.check){%> checked <%}%>></div>
                             </div>        
                         </li>
                     <% }); %>

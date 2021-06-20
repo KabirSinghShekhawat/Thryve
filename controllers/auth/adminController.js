@@ -1,3 +1,5 @@
+const User = require('./../../models/user')
+
 exports.getAdmin = (req, res) => {
     return res.render('keyForm')
 }

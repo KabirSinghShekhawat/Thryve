@@ -90,11 +90,8 @@ exports.addDiet = async (req, res) => {
     let foodId = req.body.food._id;
     const user = await User.findById(userId)
 
-    let foodItem = user.diet.find(userDiet => {
-        return userDiet.food === foodId
-    })
-
-    const foodAlreadyExists = (typeof foodItem !== 'undefined')
+    const foodAlreadyExists = user.diet.some(diet => diet.food === foodId)
+    
     if (foodAlreadyExists) {
         req.flash("error", "Already present in Checkout List")
         return res.redirect("/diet")
@@ -114,11 +111,13 @@ exports.addDiet = async (req, res) => {
 }
 
 exports.editDiet = async (req, res) => {
-    let userId = req.user._id
-    let foodId = req.body.foodInDiet._id
+    const userId = req.user._id
+    const foodId = req.body.foodInDiet._id
 
     const user = await User.findById(userId)
-    const foodIndex = findFoodIndex(user.diet, foodId)
+
+    const foodIndex = user.diet.findIndex(diet => diet.food === foodId)
+
     if (foodIndex === -1) return res.redirect('diet')
 
     user.diet[foodIndex].quantity = req.body.quantity;
@@ -127,11 +126,11 @@ exports.editDiet = async (req, res) => {
 }
 
 exports.removeDiet = async (req, res) => {
-    let userId = req.user._id
-    let foodId = req.body.foodInDiet._id
+    const userId = req.user._id
+    const foodId = req.body.foodInDiet._id
     const user = await User.findById(userId)
 
-    const foodIndex = findFoodIndex(user.diet, foodId)
+    const foodIndex = user.diet.findIndex(diet => diet.food === foodId)
 
     if (foodIndex === -1)
         return res.redirect('/diet')
@@ -214,7 +213,7 @@ exports.deleteFood = async (req, res) => {
     const users = await User.find({})
     for (let user of users) {
         const currentUser = await User.findById(user._id)
-        const idx = findFoodIndex(currentUser.diet, foodId)
+        const idx = currentUser.diet.findIndex(diet => diet.food === foodId)
 
         if (idx === -1) continue
         currentUser.diet.splice(idx, 1)
@@ -238,11 +237,13 @@ function getNewFood(food, addedBy) {
         proteinTag: food.proteinTag.toLowerCase(),
         fatTag: food.fatTag.toLowerCase(),
         carbohydratesTag: food.carbohydratesTag.toLowerCase(),
-        energy,
-        nutrients,
-        addedBy
+        energy: energy,
+        nutrients: nutrients,
+        addedBy: addedBy
     }
 }
+
+// TODO: Remove redundant function
 
 function findFoodIndex(diet, foodId) {
     if (typeof diet === 'undefined' || diet.length === 0) return -1
