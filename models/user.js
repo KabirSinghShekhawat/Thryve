@@ -1,47 +1,48 @@
-var mongoose = require("mongoose");
-var passportLocalMongoose = require("passport-local-mongoose");
-var bcrypt = require("bcrypt-nodejs");
+import mongoose from "mongoose";
+import passportLocalMongoose from "passport-local-mongoose";
+// import * as bcrypt from "bcrypt-nodejs"
 
-    //User
-//---------
-var UserSchema = new mongoose.Schema({
-    username: {type: String, unique: true, required: true},
-    email: {type: String, required: true},
+//User
+const UserSchema = new mongoose.Schema({
+    username: { type: String, unique: true, required: true },
+    email: { type: String, required: true },
     password: String,
-    admin: {type: Boolean, default: false},
+    admin: { type: Boolean, default: false },
     otp: String,
     otpExpires: Date,
-    verified: {type: Boolean, default: false},
+    verified: { type: Boolean, default: false },
     resetPasswordToken: String,
     resetPasswordExpires: Date,
     profile: {
-        type: mongoose.Schema.Types.ObjectId, 
+        type: mongoose.Schema.Types.ObjectId,
         ref: "Profile"
     },
-    diet:[
+    diet: [
         {
             food: {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: "Food",
-            },  
-            quantity: {
-                amount: {type:Number, default: 100},
-                unit: {type: String, default: "g"}
+                ref: "Food"
             },
-            check: {type: Boolean, default:false}
+            quantity: {
+                amount: { type: Number, default: 100 },
+                unit: { type: String, default: "g" }
+            },
+            check: { type: Boolean, default: false }
         }
     ],
-    workout:[
+    workout: [
         {
-            exercise:{
+            exercise: {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: "Exercise",
+                ref: "Exercise"
             },
-            duration: {type: Number, default: 15},
-            check: {type: Boolean, default:false}
+            duration: { type: Number, default: 15 },
+            check: { type: Boolean, default: false }
         }
     ]
 });
+
 UserSchema.plugin(passportLocalMongoose);
 
-module.exports = mongoose.model("User", UserSchema);
+const User = mongoose.model("User", UserSchema);
+export default User;

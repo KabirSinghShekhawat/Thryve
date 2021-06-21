@@ -1,22 +1,23 @@
-const express = require('express');
+import * as express from "express";
+import * as auth from "../controllers/auth/flash";
+import * as homeController from "../controllers/homeController";
+
 const router = express.Router();
-const auth = require('./../controllers/auth/flash')
-const homeController = require('./../controllers/homeController')
 
 router
-    .route('/')
-    .get(homeController.landingPage)
+    .route("/")
+    .get(homeController.landingPage);
 
 router
-    .route('/home')
-    .get(auth.isLoggedIn, auth.isVerified, homeController.home)
+    .route("/home")
+    .get(auth.isLoggedIn, auth.isVerified, homeController.home);
 
 router
-    .route('/home/foods')
-    .put(auth.isLoggedIn, auth.isVerified, homeController.food)
+    .route("/home/foods")
+    .put(auth.isLoggedIn, auth.isVerified, homeController.food);
 
 router
-    .route('/home/exercises')
-    .put(auth.isLoggedIn, auth.isVerified, homeController.exercises)
+    .route("/home/exercises")
+    .put(auth.isLoggedIn, auth.isVerified, homeController.exercises);
 
-module.exports = router
+export default router;

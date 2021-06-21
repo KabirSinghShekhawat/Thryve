@@ -1,10 +1,10 @@
-const Food = require("./../models/food")
-const User = require('./../models/user')
+import Food from "./../models/food";
+import User from "./../models/user";
 
-exports.getDiet = async (req, res) => {
-    const categories = await Food.distinct('categoryTag')
+export async function getDiet (req, res) {
+    const categories = await Food.distinct("categoryTag");
     let
-        {_id: userId} = req.user,
+        { _id: userId } = req.user,
         nameQuery,
         categoryQuery = [],
         proteinQuery,
@@ -12,64 +12,64 @@ exports.getDiet = async (req, res) => {
         carbohydratesQuery,
         perPage = 6,
         pageQuery = parseInt(req.query.page),
-        pageNumber = pageQuery ? pageQuery : 1
+        pageNumber = pageQuery ? pageQuery : 1;
 
     //search query
     if (!req.query.search)
-        nameQuery = new RegExp(AnyExp(""), 'gi')
+        nameQuery = new RegExp(AnyExp(""), "gi");
     else
-        nameQuery = new RegExp(StrCmpExp(req.query.search), 'gi')
+        nameQuery = new RegExp(StrCmpExp(req.query.search), "gi");
 
     //category query
     if (req.query.tags)
         for (let key in req.query.tags)
-            categoryQuery.push(new RegExp(StrCmpExp(req.query.tags[key]), 'gi'))
+            categoryQuery.push(new RegExp(StrCmpExp(req.query.tags[key]), "gi"));
 
     if (categoryQuery.length === 0)
-        categoryQuery.push(new RegExp(AnyExp(""), 'gi'))
+        categoryQuery.push(new RegExp(AnyExp(""), "gi"));
 
     //nutrients query
     if (req.query.proteinTag)
-        proteinQuery = new RegExp(StrCmpExp(req.query.proteinTag), 'gi')
+        proteinQuery = new RegExp(StrCmpExp(req.query.proteinTag), "gi");
     else
-        proteinQuery = new RegExp(AnyExp(""), 'gi')
+        proteinQuery = new RegExp(AnyExp(""), "gi");
 
     if (req.query.fatTag)
-        fatQuery = new RegExp(StrCmpExp(req.query.fatTag), 'gi')
+        fatQuery = new RegExp(StrCmpExp(req.query.fatTag), "gi");
     else
-        fatQuery = new RegExp(AnyExp(""), 'gi')
+        fatQuery = new RegExp(AnyExp(""), "gi");
 
 
     if (req.query.carbohydratesTag)
-        carbohydratesQuery = new RegExp(StrCmpExp(req.query.carbohydratesTag), 'gi')
+        carbohydratesQuery = new RegExp(StrCmpExp(req.query.carbohydratesTag), "gi");
     else
-        carbohydratesQuery = new RegExp(AnyExp(""), 'gi')
+        carbohydratesQuery = new RegExp(AnyExp(""), "gi");
 
 
     const foods = await Food.find({
         name: nameQuery,
-        categoryTag: {$in: categoryQuery},
+        categoryTag: { $in: categoryQuery },
         proteinTag: proteinQuery,
         fatTag: fatQuery,
         carbohydratesTag: carbohydratesQuery
     })
         .skip(perPage * pageNumber - perPage)
-        .limit(perPage)
+        .limit(perPage);
 
     const foodCount = await Food
         .count({
             name: nameQuery,
-            categoryTag: {$in: categoryQuery},
+            categoryTag: { $in: categoryQuery },
             proteinTag: proteinQuery,
             fatTag: fatQuery,
             carbohydratesTag: carbohydratesQuery
-        })
+        });
 
     const user = await User
         .findById(userId)
-        .populate({path: "diet.food"})
+        .populate({ path: "diet.food" });
 
-    const {search, tags, proteinTag, fatTag, carbohydratesTag} = req.query
+    const { search, tags, proteinTag, fatTag, carbohydratesTag } = req.query;
 
     return res.render("diet/index", {
         user: user,
@@ -82,153 +82,153 @@ exports.getDiet = async (req, res) => {
         proteinTag: proteinTag,
         fatTag: fatTag,
         carbohydratesTag: carbohydratesTag
-    })
+    });
 }
 
-exports.addDiet = async (req, res) => {
+export async function addDiet (req, res) {
     let userId = req.user._id;
     let foodId = req.body.food._id;
-    const user = await User.findById(userId)
+    const user = await User.findById(userId);
 
-    const foodAlreadyExists = user.diet.some(diet => diet.food === foodId)
-    
+    const foodAlreadyExists = user.diet.some(diet => diet.food === foodId);
+
     if (foodAlreadyExists) {
-        req.flash("error", "Already present in Checkout List")
-        return res.redirect("/diet")
+        req.flash("error", "Already present in Checkout List");
+        return res.redirect("/diet");
     }
 
-    const food = await Food.findById(foodId)
-    food.activeUsers = food.activeUsers + 1
-    await food.save()
+    const food = await Food.findById(foodId);
+    food.activeUsers = food.activeUsers + 1;
+    await food.save();
 
     const newFood = {
         food: food,
         quantity: req.body.quantity
-    }
-    user.diet.push(newFood)
-    await user.save()
-    return res.redirect("/diet")
+    };
+    user.diet.push(newFood);
+    await user.save();
+    return res.redirect("/diet");
 }
 
-exports.editDiet = async (req, res) => {
-    const userId = req.user._id
-    const foodId = req.body.foodInDiet._id
+export async function editDiet (req, res) {
+    const userId = req.user._id;
+    const foodId = req.body.foodInDiet._id;
 
-    const user = await User.findById(userId)
+    const user = await User.findById(userId);
 
-    const foodIndex = user.diet.findIndex(diet => diet.food === foodId)
+    const foodIndex = user.diet.findIndex(diet => diet.food === foodId);
 
-    if (foodIndex === -1) return res.redirect('diet')
+    if (foodIndex === -1) return res.redirect("diet");
 
     user.diet[foodIndex].quantity = req.body.quantity;
     await user.save();
     return res.redirect("/diet");
 }
 
-exports.removeDiet = async (req, res) => {
-    const userId = req.user._id
-    const foodId = req.body.foodInDiet._id
-    const user = await User.findById(userId)
+export async function removeDiet (req, res) {
+    const userId = req.user._id;
+    const foodId = req.body.foodInDiet._id;
+    const user = await User.findById(userId);
 
-    const foodIndex = user.diet.findIndex(diet => diet.food === foodId)
+    const foodIndex = user.diet.findIndex(diet => diet.food === foodId);
 
     if (foodIndex === -1)
-        return res.redirect('/diet')
+        return res.redirect("/diet");
 
-    user.diet.splice(foodIndex, 1)
-    await user.save()
+    user.diet.splice(foodIndex, 1);
+    await user.save();
 
-    const food = await Food.findById(foodId)
+    const food = await Food.findById(foodId);
 
-    food.activeUsers = food.activeUsers - 1
-    await food.save()
-    return res.redirect("/diet")
+    food.activeUsers = food.activeUsers - 1;
+    await food.save();
+    return res.redirect("/diet");
 }
 
-exports.getNewFood = async (req, res) => {
-    const foodCategories = await Food.distinct('categoryTag')
-    return res.render('diet/new', {categories: foodCategories})
+export async function getNewFood (req, res) {
+    const foodCategories = await Food.distinct("categoryTag");
+    return res.render("diet/new", { categories: foodCategories });
 }
 
-exports.createNewFood = async (req, res) => {
+export async function createNewFood (req, res) {
     const
-        {food} = req.body,
-        addedBy = req.user
+        { food } = req.body,
+        addedBy = req.user;
 
     if (!addedBy) {
-        req.flash('error', 'No user specified')
-        return res.redirect('/diet')
+        req.flash("error", "No user specified");
+        return res.redirect("/diet");
     }
 
-    const newFood = getNewFood(food, addedBy)
+    const newFood = createNewFoodItem(food, addedBy);
 
     try {
-        await Food.create(newFood)
-        req.flash("success", "Successfully Submitted.")
-        return res.redirect("/diet")
+        await Food.create(newFood);
+        req.flash("success", "Successfully Submitted.");
+        return res.redirect("/diet");
     } catch (err) {
-        req.flash('error', 'An error occurred: ' + err)
-        return res.redirect('/diet')
+        req.flash("error", "An error occurred: " + err);
+        return res.redirect("/diet");
     }
 
 }
 
-exports.verifyFood = async (req, res) => {
-    const {fdid: foodId} = req.params
-    const food = await Food.findById(foodId)
+export async function verifyFood (req, res) {
+    const { fdid: foodId } = req.params;
+    const food = await Food.findById(foodId);
 
-    if (!food) throw new Error(err.message)
+    if (!food) throw new Error("Food not found");
 
-    food.verified = true
-    food.verifiedBy = req.user
-    await food.save()
-    return res.redirect('/diet')
+    food.verified = true;
+    food.verifiedBy = req.user;
+    await food.save();
+    return res.redirect("/diet");
 }
 
-exports.getFoodEditor = async (req, res) => {
-    const {fdid: foodId} = req.params
-    const food = await Food.findById(foodId)
+export async function getFoodEditor (req, res) {
+    const { fdid: foodId } = req.params;
+    const food = await Food.findById(foodId);
 
-    if (!food) throw new Error(err.message)
-    return res.render('diet/edit', {food: food})
+    if (!food) throw new Error('Food not found');
+    return res.render("diet/edit", { food: food });
 }
 
-exports.updateFood = async (req, res) => {
-    const {fdid: foodId} = req.params
+export async function updateFood (req, res) {
+    const { fdid: foodId } = req.params;
     try {
-        await Food.findByIdAndUpdate(foodId, req.body.food)
-        req.flash('success', 'Update Successful')
+        await Food.findByIdAndUpdate(foodId, req.body.food);
+        req.flash("success", "Update Successful");
     } catch (err) {
-        req.flash('error', 'Something went wrong')
+        req.flash("error", "Something went wrong");
     } finally {
-        res.redirect("/diet")
+        res.redirect("/diet");
     }
 }
 
-exports.deleteFood = async (req, res) => {
-    const {fdid: foodId} = req.params
-    await Food.findByIdAndRemove(foodId)
-    req.flash("success", "Food deleted")
+export async function deleteFood (req, res) {
+    const { fdid: foodId } = req.params;
+    await Food.findByIdAndRemove(foodId);
+    req.flash("success", "Food deleted");
 
-    const users = await User.find({})
+    const users = await User.find({});
     for (let user of users) {
-        const currentUser = await User.findById(user._id)
-        const idx = currentUser.diet.findIndex(diet => diet.food === foodId)
+        const currentUser = await User.findById(user._id);
+        const idx = currentUser.diet.findIndex(diet => diet.food === foodId);
 
-        if (idx === -1) continue
-        currentUser.diet.splice(idx, 1)
-        await currentUser.save()
+        if (idx === -1) continue;
+        currentUser.diet.splice(idx, 1);
+        await currentUser.save();
     }
-    return res.redirect('/diet')
+    return res.redirect("/diet");
 }
 
-function getNewFood(food, addedBy) {
-    const {energy, nutrients} = food
+function createNewFoodItem (food, addedBy) {
+    const { energy, nutrients } = food;
 
-    energy.unit = energy.unit.toLowerCase()
-    nutrients.protein.unit = nutrients.protein.unit.toLowerCase()
-    nutrients.fat.unit = nutrients.fat.unit.toLowerCase()
-    nutrients.carbohydrates.unit = nutrients.carbohydrates.unit.toLowerCase()
+    energy.unit = energy.unit.toLowerCase();
+    nutrients.protein.unit = nutrients.protein.unit.toLowerCase();
+    nutrients.fat.unit = nutrients.fat.unit.toLowerCase();
+    nutrients.carbohydrates.unit = nutrients.carbohydrates.unit.toLowerCase();
 
     return {
         ...food,
@@ -240,24 +240,24 @@ function getNewFood(food, addedBy) {
         energy: energy,
         nutrients: nutrients,
         addedBy: addedBy
-    }
+    };
 }
 
 // TODO: Remove redundant function
 
-function findFoodIndex(diet, foodId) {
-    if (typeof diet === 'undefined' || diet.length === 0) return -1
-    let foodIndex = -1
+function findFoodIndex (diet, foodId) {
+    if (typeof diet === "undefined" || diet.length === 0) return -1;
+    let foodIndex = -1;
     diet.find((userDiet, index) => {
-        foodIndex = userDiet.food === foodId ? index : -1
-    })
-    return foodIndex
+        foodIndex = userDiet.food === foodId ? index : -1;
+    });
+    return foodIndex;
 }
 
-function StrCmpExp(text) {
+function StrCmpExp (text) {
     return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 }
 
-function AnyExp(text) {
+function AnyExp (text) {
     return text.replace(text, ".*");
 }

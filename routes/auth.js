@@ -1,38 +1,38 @@
-const express = require('express')
-const router = express.Router()
-const passport = require("passport")
+import * as express from "express";
+import passport from "passport";
 
-const
-    auth = require('./../controllers/auth/flash'),
-    authController = require('./../controllers/auth/authController'),
-    adminController = require('./../controllers/auth/adminController')
+import * as auth from "../controllers/auth/flash";
+import * as authController from "../controllers/auth/authController";
+import * as adminController from "../controllers/auth/adminController";
+
+const router = express.Router();
 
 const passportAuth = passport.authenticate("local", {
     successRedirect: "/home",
     failureRedirect: "/",
     failureFlash: true
-})
+});
 
 router
-    .route('/register')
-    .post(auth.isLoggedIn, auth.isVerified, authController.register)
+    .route("/register")
+    .post(auth.isLoggedIn, auth.isVerified, authController.register);
 
 router
-    .route('/login')
-    .post(passportAuth, authController.login)
+    .route("/login")
+    .post(passportAuth, authController.login);
 
 router
-    .route('/logout')
-    .get(auth.isLoggedIn, auth.isVerified, authController.logout)
+    .route("/logout")
+    .get(auth.isLoggedIn, auth.isVerified, authController.logout);
 
 router
-    .route('/reset/password')
+    .route("/reset/password")
     .get(authController.getPasswordReset)
-    .post(authController.postNewPassword)
+    .post(authController.postNewPassword);
 
 router
-    .route('/admin')
+    .route("/admin")
     .get(auth.isLoggedIn, auth.isVerified, adminController.getAdmin)
-    .post(auth.isLoggedIn, auth.isVerified, adminController.postAdmin)
+    .post(auth.isLoggedIn, auth.isVerified, adminController.postAdmin);
 
-module.exports = router
+export default router;

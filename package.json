@@ -1,10 +1,11 @@
 {
   "name": "thryvev5",
   "version": "5.0.0",
+  "type": "module",
   "description": "New Design",
   "main": "app.js",
   "scripts": {
-    "start": "nodemon server.js"
+    "start": "nodemon --experimental-modules --es-module-specifier-resolution=node server"
   },
   "author": "Kabir Singh, Omkar",
   "license": "MIT",

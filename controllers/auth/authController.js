@@ -1,64 +1,64 @@
-const User = require('./../../models/user')
-const
-    passport = require("passport"),
-    async = require('async'),
-    nodemailer = require("nodemailer"),
-    crypto = require("crypto")
+import User from "./../../models/user";
 
-exports.register = async (req, res) => {
+import * as passport from "passport";
+import * as async from "async";
+import * as nodemailer from "nodemailer";
+import * as crypto from "crypto";
+
+export const register = async (req, res) => {
     const newUser = new User({
         username: req.body.username,
         email: req.body.email
-    })
+    });
 
-    const {password, passwordCheck} = req.body
-    const {isValidPassword, errorMessage} = validatePassword(password, passwordCheck)
+    const { password, passwordCheck } = req.body;
+    const { isValidPassword, errorMessage } = validatePassword(password, passwordCheck);
 
     if (!isValidPassword) {
-        req.flash('error', errorMessage)
-        return res.redirect('/')
+        req.flash("error", errorMessage);
+        return res.redirect("/");
     }
 
     User.register(newUser, password, (err) => {
         if (err) {
-            req.flash("error", err.message)
-            return res.redirect("/")
+            req.flash("error", err.message);
+            return res.redirect("/");
         }
 
         passport.authenticate("local")(req, res, () => {
-            req.flash("success", "Complete the verification")
-            return res.redirect("/otp")
-        })
-    })
-}
+            req.flash("success", "Complete the verification");
+            return res.redirect("/otp");
+        });
+    });
+};
 
-exports.login = (req, res) => {
-    return res.redirect('/home')
-}
+export const login = (req, res) => {
+    return res.redirect("/home");
+};
 
-exports.logout = (req, res) => {
-    req.logout()
-    req.flash("success", "Successfully logged out")
-    return res.status(200).redirect("/")
-}
+export const logout = (req, res) => {
+    req.logout();
+    req.flash("success", "Successfully logged out");
+    return res.status(200).redirect("/");
+};
 
-exports.getPasswordReset = (req, res) => {
-    return res.render('mailer')
-}
+export const getPasswordReset = (req, res) => {
+    return res.render("mailer");
+};
 
-exports.postNewPassword = (req, res, next) => {
+export function postNewPassword (req, res, next) {
     async.waterfall([
             function (done) {
                 crypto.randomBytes(20, function (err, buf) {
-                    let token = buf.toString('hex');
+                    let token = buf.toString("hex");
                     done(err, token);
                 });
             },
             function (token, done) {
-                User.findOne({email: req.body.email}, function (err, user) {
+                User.findOne({ email: req.body.email }, function (err, user) {
                     if (!user) {
-                        req.flash('error', 'No account with that email address exists.');
-                        return res.redirect('/auth/reset/password');
+                        req.flash("error", "No account with that email address exists.");
+                        return res.redirect("/auth/reset/password");
                     }
 
                     user.resetPasswordToken = token;
@@ -71,7 +71,7 @@ exports.postNewPassword = (req, res, next) => {
             },
             function (token, user, done) {
                 let smtpTransport = nodemailer.createTransport({
-                    service: 'Gmail',
+                    service: "Gmail",
                     auth: {
                         user: process.env.NODEMAILER_USER,
                         pass: process.env.NODEMAILER_PASS
@@ -80,53 +80,53 @@ exports.postNewPassword = (req, res, next) => {
                 let mailOptions = {
                     to: user.email,
                     from: process.env.NODEMAILER_USER,
-                    subject: 'Password Reset',
+                    subject: "Password Reset",
                     text:
-                        'You are receiving this because you have requested the ' +
-                        'reset of the password for your account.\n\n' +
-                        'Please click on the following link to complete the process:\n\n' +
-                        'http://' + req.headers.host + '/reset/' + token + '\n\n' +
-                        'If you did not request this, please ignore this email ' +
-                        'and your password will remain unchanged.\n'
+                        "You are receiving this because you have requested the " +
+                        "reset of the password for your account.\n\n" +
+                        "Please click on the following link to complete the process:\n\n" +
+                        "http://" + req.headers.host + "/reset/" + token + "\n\n" +
+                        "If you did not request this, please ignore this email " +
+                        "and your password will remain unchanged.\n"
                 };
                 smtpTransport.sendMail(mailOptions, function (err) {
-                    console.log('mail sent')
+                    console.log("mail sent");
                     req.flash(
-                        'success',
-                        'An e-mail has been sent to '
+                        "success",
+                        "An e-mail has been sent to "
                         + user.email
-                        + ' with further instructions.'
-                    )
-                    done(err, 'done')
-                })
+                        + " with further instructions."
+                    );
+                    done(err, "done");
+                });
             }
         ],
         function (err) {
-            if (err) return next(err)
-            return res.redirect('back')
-        })
+            if (err) return next(err);
+            return res.redirect("back");
+        });
 }
 
-function validatePassword(password, passwordCheck) {
+function validatePassword (password, passwordCheck) {
     const result = {
         isValidPassword: false,
-        errorMessage: ''
-    }
+        errorMessage: ""
+    };
 
-    if (typeof password === 'undefined' || password.length === 0) {
-        return {...result, errorMessage: 'empty password'}
+    if (typeof password === "undefined" || password.length === 0) {
+        return { ...result, errorMessage: "empty password" };
     }
 
     if (password !== passwordCheck) {
-        return {...result, errorMessage: 'invalid credentials'}
+        return { ...result, errorMessage: "invalid credentials" };
     }
 
     if (password.length < 8) {
-        return {...result, errorMessage: 'Password should have minimum 8 characters.'}
+        return { ...result, errorMessage: "Password should have minimum 8 characters." };
     }
 
     return {
         ...result,
         isValidPassword: true
-    }
+    };
 }

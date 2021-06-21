@@ -1,8 +1,6 @@
-var mongoose = require("mongoose");
-
-    //Food
-//---------
-var FoodSchema = new mongoose.Schema({
+import mongoose from "mongoose"
+//Food
+const FoodSchema = new mongoose.Schema({
     name: String,
     categoryTag: String,
     proteinTag: String,
@@ -27,15 +25,16 @@ var FoodSchema = new mongoose.Schema({
         }
     },
     activeUsers: {type: Number, default: 0},
-    verified: {type: Boolean, default:false},
+    verified: {type: Boolean, default: false},
     verifiedBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref:"User"
+        ref: "User"
     },
     addedBy: {
         type: mongoose.Schema.Types.ObjectId,
-        ref:"User"
+        ref: "User"
     }
 });
 
-module.exports = mongoose.model("Food", FoodSchema);
+const Food = mongoose.model("Food", FoodSchema)
+export default Food

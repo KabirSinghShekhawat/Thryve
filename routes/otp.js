@@ -1,21 +1,22 @@
-const express = require('express')
-const router = express.Router()
-const auth = require('./../controllers/auth/flash')
-const otpController = require('./../controllers/auth/otpController')
+import * as express from "express";
+import * as auth from "../controllers/auth/flash";
+import * as otpController from "../controllers/auth/otpController";
+
+const router = express.Router();
 
 router
-    .route('/')
+    .route("/")
     .get(auth.isLoggedIn, otpController.getOtp)
-    .post(auth.isLoggedIn, otpController.sendOtp)
+    .post(auth.isLoggedIn, otpController.sendOtp);
 
 router
-    .route('/check')
+    .route("/check")
     .get(auth.isLoggedIn, otpController.getOtpCheck)
-    .post(auth.isLoggedIn, otpController.postOtpCheck)
+    .post(auth.isLoggedIn, otpController.postOtpCheck);
 
 router
-    .route('/reset/:token')
+    .route("/reset/:token")
     .get(otpController.getResetToken)
-    .post(otpController.postResetToken)
+    .post(otpController.postResetToken);
 
-module.exports = router
+export default router;

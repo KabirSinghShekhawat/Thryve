@@ -1,28 +1,29 @@
-const Food = require('../../models/food')
-const Exercise = require('../../models/exercise')
+import Food from "./../../models/food";
+import Exercise from "../../models/exercise";
 
-exports.isLoggedIn = (req, res, next) => {
+
+export const isLoggedIn = (req, res, next) => {
     if (req.isAuthenticated()) return next()
 
     req.flash("error", "You need to be logged in to do that")
     return res.redirect("/")
 }
 
-exports.isVerified = (req, res, next) => {
+export const isVerified = (req, res, next) => {
     if (req.user.verified) return next()
 
     req.flash("error", "Verification of account is pending")
     return res.redirect("/otp")
 }
 
-exports.isAdmin = (req, res, next) => {
+export const isAdmin = (req, res, next) => {
     if (req.user.admin) return next()
 
     req.flash("error", "You don't have admin privileges")
     return res.redirect("back")
 }
 
-exports.isFoodAuthorized = (req, res, next) => {
+export const isFoodAuthorized = (req, res, next) => {
     if (req.user.admin) return next()
 
     const {fdid: foodId} = req.params
@@ -40,7 +41,7 @@ exports.isFoodAuthorized = (req, res, next) => {
     })
 }
 
-exports.isExerciseAuthorized = (req, res, next) => {
+export const isExerciseAuthorized = (req, res, next) => {
     if (req.user.admin) return next()
 
     const {exid: exerciseId} = req.params

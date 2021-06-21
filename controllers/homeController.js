@@ -1,61 +1,61 @@
-const User = require('./../models/user')
+import User from "../models/user";
 
-exports.landingPage = (request, response) => {
-    response.render('landing')
+export function landingPage (request, response) {
+    response.render("landing");
 }
 
-exports.home = async (request, response) => {
-    let userId = request.user._id
+export async function home (request, response) {
+    let userId = request.user._id;
     await User
         .findById(userId)
-        .populate({ path: 'diet.food' })
-        .populate({ path: 'workout.exercise' })
+        .populate({ path: "diet.food" })
+        .populate({ path: "workout.exercise" })
         .exec((err, user) => {
-            if (err) console.log(err)
+            if (err) console.log(err);
             else
-                response.render('home', { user: user })
-        })
+                response.render("home", { user: user });
+        });
 
 }
 
-exports.food = async (request, response) => {
-    let userId = request.user._id
+export async function food (request, response) {
+    let userId = request.user._id;
     await User
         .findById(userId)
-        .populate({ path: 'diet.food' })
+        .populate({ path: "diet.food" })
         .exec((err, user) => {
             for (let i = 0; i < user.diet.length; ++i) {
-                let flag = false
+                let flag = false;
                 for (let key in request.body.tick) {
                     if (user.diet[i].food._id === request.body.tick[key]) {
-                        user.diet[i].check = true
-                        flag = true
+                        user.diet[i].check = true;
+                        flag = true;
                     }
                 }
-                if (!flag) user.diet[i].check = false
+                if (!flag) user.diet[i].check = false;
             }
-            user.save()
-            response.redirect('/home')
-        })
+            user.save();
+            response.redirect("/home");
+        });
 }
 
-exports.exercises = async (request, response) => {
-    let userId = request.user._id
+export async function exercises (request, response) {
+    let userId = request.user._id;
     await User
         .findById(userId)
-        .populate({ path: 'workout.exercise' })
+        .populate({ path: "workout.exercise" })
         .exec((err, user) => {
-            for(let i = 0; i < user.workout.length; ++i) {
-                let flag = false
-                for(let key in request.body.tick) {
-                    if(user.workout[i].exercise._id === request.body.tick[key]) {
-                        user.workout[i].check = true
-                        flag = true
+            for (let i = 0; i < user.workout.length; ++i) {
+                let flag = false;
+                for (let key in request.body.tick) {
+                    if (user.workout[i].exercise._id === request.body.tick[key]) {
+                        user.workout[i].check = true;
+                        flag = true;
                     }
                 }
-                if(!flag) user.workout[i].check = false
+                if (!flag) user.workout[i].check = false;
             }
-            user.save()
-            response.redirect('/home')
-        })
+            user.save();
+            response.redirect("/home");
+        });
 }
