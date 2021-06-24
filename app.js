@@ -92,158 +92,14 @@ function isVerified (req, res, next) {
     res.redirect("/otp");
 }
 
-function isExerciseAuthorized (req, res, next) {
-    if (req.user.admin) {
-        return next();
-    } else {
-        let exerciseId = req.params.exid;
-        Exercise.findById(exerciseId, function (err, exercise) {
-            if (err) {
-                req.flash("error", "Something went wrong");
-                res.redirect("/workout");
-            } else {
-                if (!exercise.verified && exercise.addedBy.equals(req.user._id)) {
-                    return next();
-                } else {
-                    req.flash("error", "Something went wrong");
-                    res.redirect("/workout");
-                }
-            }
-        });
-    }
-}
-
-function isAdmin (req, res, next) {
-    if (req.user.admin) {
-        return next();
-    }
-    req.flash("error", "You don't have admin privileges");
-    res.redirect("back");
-}
-
 app.use("/", homeRoute);
 app.use("/profile", profileRoute);
 app.use("/history", historyRoute);
 app.use("/diet", dietRoute);
-app.use("/workouts", workoutRoute);
-// Workout Route
-// INDEX
-// ADD
-// REMOVE
-//CHANGE
-// Exercise Route
-//NEW
-app.get("/workout/exercise/new", isLoggedIn, isVerified, function (req, res) {
-    console.log("GET: /workout/exercise/new");
-    res.render("workout/new");
-});
-//CREATE
-app.post("/workout/exercise", isLoggedIn, isVerified, function (req, res) {
-    console.log("POST: /workout/exercise");
-    let exercise = req.body.exercise;
-    exercise.name = exercise.name.toLowerCase();
-    exercise.tag = exercise.tag.toLowerCase();
-    exercise.addedBy = req.user;
-    // req.body.exercise.steps = req.sanitize(req.body.exercise.steps);
-
-    Exercise.create(exercise, function (err) {
-        if (err) {
-            console.log(err);
-            req.flash("error", "Something went wrong");
-            res.redirect("/workout");
-        } else {
-            req.flash("success", "Successfully Submitted.");
-            res.redirect("/workout");
-        }
-    }).catch(e => {
-        throw new Error(e.message);
-    });
-});
-//VERIFY
-app.post("/workout/exercise/:exid/verify", isLoggedIn, isVerified, isAdmin, function (req, res) {
-    let exerciseId = req.params.exid;
-    Exercise.findById(exerciseId, function (err, exercise) {
-        if (err) {
-            console.log(err);
-        } else {
-            exercise.verified = true;
-            exercise.verifiedBy = req.user;
-            exercise.save();
-            res.redirect("/workout");
-        }
-    });
-});
-//SHOW
-app.get("/workout/exercise/:exid", isLoggedIn, isVerified, function (req, res) {
-    let exid = req.params.exid;
-    console.log("GET: /workout/exercise/" + exid);
-    Exercise.findById(exid, function (err, foundExercise) {
-        if (err) {
-            console.log(err);
-        } else {
-            res.render("workout/show", { exercise: foundExercise });
-        }
-    });
-});
-//EDIT
-app.get("/workout/exercise/:exid/edit", isLoggedIn, isVerified, isExerciseAuthorized, function (req, res) {
-    let exid = req.params.exid;
-    console.log("GET: /workout/exercise/" + exid + "/edit");
-    Exercise.findById(exid, function (err, foundExercise) {
-        res.render("workout/edit", { exercise: foundExercise });
-    });
-});
-//UPDATE
-app.put("/workout/exercise/:exid", isLoggedIn, isVerified, isExerciseAuthorized, function (req, res) {
-    let exid = req.params.exid;
-    console.log("PUT: /workout/exercise/" + exid);
-    Exercise.findByIdAndUpdate(exid, req.body.exercise, function (err, updatedExercise) {
-        if (err) {
-            console.log(err);
-            req.flash("error", "Something went wrong");
-            res.redirect("/workout");
-        } else {
-            req.flash("success", "Update Successful");
-            res.redirect("/workout/exercise/" + exid);
-        }
-    });
-});
-//DELETE
-app.delete("/workout/exercise/:exid", isLoggedIn, isVerified, isExerciseAuthorized, function (req, res) {
-    let exid = req.params.exid;
-    console.log("DELETE: /workout/exercise/" + exid);
-    Exercise.findByIdAndRemove(exid, function (err) {
-        if (err) {
-            console.log(err);
-            req.flash("error", "Something went wrong");
-            res.redirect("/workout");
-        } else {
-            req.flash("success", "Exercise deleted");
-            User.find({}, function (err, users) {
-                users.forEach(function (user) {
-                    User.findById(user._id, function (err, user) {
-                        let idx = undefined;
-                        user.workout.find(function (w, index) {
-                            {
-                                if (w.food === exerciseId) {
-                                    idx = index;
-                                    return true;
-                                }
-                            }
-                        });
-                        if (idx !== -1) {
-                            user.workout.splice(idx, 1);
-                            user.save();
-                        }
-                    });
-                });
-                res.redirect("/workout");
-            });
-        }
-    });
-});
-
+app.use("/workout", workoutRoute);
 app.use("/healthinfo", healthInfoRoute);
+app.use("/auth", authRoute);
+app.use("/otp", otpRoute);
 
 app.get("/api", isLoggedIn, isVerified, function (req, res) {
     //console.log("GET: /api");
@@ -284,8 +140,5 @@ app.get("/exercises/api", isLoggedIn, isVerified, function (req, res) {
         }
     });
 });
-
-app.use("/auth", authRoute);
-app.use("/otp", otpRoute);
 
 export default app;

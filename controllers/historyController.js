@@ -145,7 +145,7 @@ export async function deleteSugar (req, res) {
     if (sugarProfile.sugarHist.length > 1 && idx !== -1) {
         sugarProfile.sugarHist.splice(idx, 1);
         sugarProfile.sugar = sugarProfile.sugarHist[sugarProfile.sugarHist.length - 1].sugar;
-        sugarProfile.save();
+        await sugarProfile.save();
         return res.redirect("/healthinfo");
     }
 
