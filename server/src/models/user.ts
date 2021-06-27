@@ -39,7 +39,7 @@ const UserSchema = new mongoose.Schema({
             duration: { type: Number, default: 15 },
             check: { type: Boolean, default: false }
         }
-    ]
+    ],
 });
 
 UserSchema.plugin(passportLocalMongoose);

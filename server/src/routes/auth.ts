@@ -15,7 +15,7 @@ const passportAuth = passport.authenticate("local", {
 
 router
     .route("/register")
-    .post(auth.isLoggedIn, auth.isVerified, authController.register);
+    .post(authController.register);
 
 router
     .route("/login")

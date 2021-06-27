@@ -2,3 +2,4 @@
 .idea/
 .idea/vcs.xml
 .env
+server/dist/

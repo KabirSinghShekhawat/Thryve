@@ -1,6 +1,6 @@
 import User from "./../../models/user";
 
-import * as passport from "passport";
+import passport from "passport";
 import * as async from "async";
 import * as nodemailer from "nodemailer";
 import * as crypto from "crypto";

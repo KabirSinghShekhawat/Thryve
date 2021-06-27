@@ -10,8 +10,7 @@ import methodOverride from "method-override";
 import morgan from "morgan";
 
 const app = express().disable("x-powered-by");
-const __dirname = path.resolve();
-
+// const __dirname = path.resolve();
 import User from "./models/user.js";
 import Food from "./models/food.js";
 import Exercise from "./models/exercise.js";
@@ -41,12 +40,16 @@ mongoose.connect("mongodb://localhost/thryve3", mongoConfig)
         throw new Error(err);
     });
 
+const views_path = path.join(__dirname + "/views");
+const public_path = path.join(__dirname + "/public");
+
 app.set("view engine", "ejs");
+app.set("views", views_path);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan("dev"));
 app.use(expressSanitizer());
-app.use(express.static(__dirname + "/public"));
+app.use(express.static(public_path));
 app.use(methodOverride("_method"));
 app.use(flash());
 app.locals.moment = import("moment");
@@ -76,7 +79,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 //  MIDDLEWARE
-function isLoggedIn (req, res, next) {
+function isLoggedIn(req, res, next) {
     if (req.isAuthenticated()) {
         return next();
     }
@@ -84,7 +87,7 @@ function isLoggedIn (req, res, next) {
     res.redirect("/");
 }
 
-function isVerified (req, res, next) {
+function isVerified(req, res, next) {
     if (req.user.verified) {
         return next();
     }
@@ -119,7 +122,7 @@ app.get("/foods/api", isLoggedIn, isVerified, function (req, res) {
         if (err) {
             console.log("err");
         } else {
-            foods.sort(function (a, b) {
+            foods.sort(function (a, b): number {
                 return b.activeUsers - a.activeUsers;
             });
             res.send(foods);
@@ -133,7 +136,7 @@ app.get("/exercises/api", isLoggedIn, isVerified, function (req, res) {
         if (err) {
             console.log(err);
         } else {
-            exercises.sort(function (a, b) {
+            exercises.sort(function (a, b): number {
                 return b.activeUsers - a.activeUsers;
             });
             res.send(exercises);

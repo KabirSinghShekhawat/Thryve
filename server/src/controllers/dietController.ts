@@ -1,10 +1,12 @@
+import { Request, Response, NextFunction } from "express";
+
 import Food from "./../models/food";
 import User from "./../models/user";
 
-export async function getDiet (req, res) {
+export async function getDiet (req: Request, res: Response) {
     const categories = await Food.distinct("categoryTag");
     let
-        { _id: userId } = req.user,
+        { _id: userId} = req.user,
         nameQuery,
         categoryQuery = [],
         proteinQuery,
@@ -114,9 +116,9 @@ export async function editDiet (req, res) {
     const userId = req.user._id;
     const foodId = req.body.foodInDiet._id;
 
-    const user = await User.findById(userId);
+    const user: any = await User.findById(userId);
 
-    const foodIndex = user.diet.findIndex(diet => diet.food === foodId);
+    const foodIndex: number = user.diet.findIndex(diet => diet.food === foodId);
 
     if (foodIndex === -1) return res.redirect("diet");
 
@@ -125,7 +127,7 @@ export async function editDiet (req, res) {
     return res.redirect("/diet");
 }
 
-export async function removeDiet (req, res) {
+export async function removeDiet (req: Request, res) {
     const userId = req.user._id;
     const foodId = req.body.foodInDiet._id;
     const user = await User.findById(userId);
