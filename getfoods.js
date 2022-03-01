@@ -1,9 +1,8 @@
-var mongoose = require("mongoose")
-mongoose.connect("mongodb://localhost/thryve3", {useNewUrlParser: true, useUnifiedTopology: true});
+import mongoose from "mongoose";
+mongoose.connect("mongodb://localhost/dietnote", {useNewUrlParser: true, useUnifiedTopology: true});
+import Food from "./models/food"
+import fs from "fs"
 
-var Food = require("./models/food");
-
-const fs = require("fs");
 fs.exists('foods.json', function(exists){
    if(exists){
         console.log("delete the existing foods.json first");

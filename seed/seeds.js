@@ -1,9 +1,9 @@
-var mongoose = require("mongoose")
-mongoose.connect("mongodb://localhost/thryve3", {useNewUrlParser: true, useUnifiedTopology: true});
+import mongoose from "mongoose";
+mongoose.connect("mongodb://localhost/dietnote", {useNewUrlParser: true, useUnifiedTopology: true});
 
-var Food = require("./models/food");
-var Profile = require("./models/profile");
-var Exercise = require("./models/exercise");
+import Food from "../models/food";
+import Profile from "../models/profile";
+import Exercise from "../models/exercise";
 
 // Food.remove({}, function(err){
 //     if(err){
@@ -19,7 +19,6 @@ var Exercise = require("./models/exercise");
             
 //             fs1.readFile('foods.json','utf8', function(err,data){
 //                 obj = JSON.parse(data);
-//                 //console.log(obj.table);
 //                 obj.table.forEach(function(food){
 //                     Food.create(food, function(err){
 //                         if(err){

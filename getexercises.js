@@ -1,5 +1,5 @@
 var mongoose = require("mongoose")
-mongoose.connect("mongodb://localhost/thryve3", {useNewUrlParser: true, useUnifiedTopology: true});
+mongoose.connect("mongodb://localhost/dietnote", {useNewUrlParser: true, useUnifiedTopology: true});
 
 var Exercise = require("./models/exercise");
 

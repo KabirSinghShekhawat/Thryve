@@ -33,7 +33,7 @@ const mongoConfig = {
     useFindAndModify: false
 };
 
-mongoose.connect("mongodb://localhost/thryve3", mongoConfig)
+mongoose.connect("mongodb://localhost/dietnote", mongoConfig)
     .then(() => {
         console.log("connected to database");
     })

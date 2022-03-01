@@ -1,8 +1,8 @@
 {
   "name": "thryvev5",
   "version": "5.0.0",
-  "type": "module",
   "description": "New Design",
+  "type": "module",
   "main": "app.js",
   "scripts": {
     "start": "nodemon --experimental-modules --es-module-specifier-resolution=node server"
@@ -26,6 +26,7 @@
     "morgan": "^1.10.0",
     "nodemailer": "^6.6.2",
     "package": "^1.0.1",
+    "package.json": "^2.0.1",
     "passport": "^0.4.1",
     "passport-local": "^1.0.0",
     "passport-local-mongoose": "^6.0.1"
